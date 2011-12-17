@@ -17,7 +17,6 @@
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
-import decimal
 import os
 
 import simplejson
