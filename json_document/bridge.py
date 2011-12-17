@@ -16,73 +16,76 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
-class DocumentBridge(object):
+"""
+Collection of decorator methods for accessing document fragments
+
+You want to use this class if you are not interested in raw JSON or
+high-level DocumentFragments (which would require you to access each value
+via the .value property).
+"""
+
+
+def fragment(func):
     """
-    Helper with decorator methods for accessing document fragments
+    Bridge to a document fragment.
+
+    The name of the fragment is identical to to the name of the decorated
+    function. The function is never called, it is only used to obtain the
+    docstring.
+
+    This is equivalent to:
+
+        @property
+        def foo(self):
+            return self['foo']
     """
+    def _get(self):
+        return self[func.__name__]
+    return property(_get, None, None, func.__doc__)
 
-    @staticmethod
-    def fragment(func):
-        """
-        Bridge to a document fragment.
 
-        The name of the fragment is identical to to the name of the decorated
-        function. The function is never called, it is only used to obtain the
-        docstring.
+def readonly(func):
+    """
+    Read-only bridge to the value of a document fragment.
 
-        This is equivalent to:
+    The name of the fragment is identical to to the name of the decorated
+    function.  The function is never called, it is only used to obtain the
+    docstring.
 
-            @property
-            def foo(self):
-                return self['foo']
-        """
-        def _get(self):
-            return self[func.__name__]
-        return property(_get, None, None, func.__doc__)
+    This is equivalent to:
 
-    @staticmethod
-    def readonly(func):
-        """
-        Read-only bridge to the value of a document fragment.
+        @property
+        def foo(self):
+            return self['foo'].value
+    """
+    def _get(self):
+        return self[func.__name__].value
+    return property(_get, None, None, func.__doc__)
 
-        The name of the fragment is identical to to the name of the decorated
-        function.  The function is never called, it is only used to obtain the
-        docstring.
 
-        This is equivalent to:
+def readwrite(func):
+    """
+    Read-write bridge to the value of a document fragment.
 
-            @property
-            def foo(self):
-                return self['foo'].value
-        """
-        def _get(self):
-            return self[func.__name__].value
-        return property(_get, None, None, func.__doc__)
+    The name of the fragment is identical to to the name of the decorated
+    function.  The function is never called, it is only used to obtain the
+    docstring.
 
-    @staticmethod
-    def readwrite(func):
-        """
-        Read-write bridge to the value of a document fragment.
+    This is equivalent to:
 
-        The name of the fragment is identical to to the name of the decorated
-        function.  The function is never called, it is only used to obtain the
-        docstring.
+        @property
+        def foo(self):
+            return self['foo'].value
 
-        This is equivalent to:
+        @foo.setter
+        def foo(self, new_value):
+            return self['foo'] = new_value
+    """
+    def _get(self):
+        return self[func.__name__].value
 
-            @property
-            def foo(self):
-                return self['foo'].value
-
-            @foo.setter
-            def foo(self, new_value):
-                return self['foo'] = new_value
-        """
-        def _get(self):
-            return self[func.__name__].value
-
-        def _set(self, new_value):
-            # XXX: See what __setitem__ does to understand why we don't assign
-            # to .value
-            self[func.__name__] = new_value
-        return property(_get, _set, None, func.__doc__)
+    def _set(self, new_value):
+        # XXX: Dear reader, see what __setitem__ does to understand why we don't assign
+        # to .value
+        self[func.__name__] = new_value
+    return property(_get, _set, None, func.__doc__)
