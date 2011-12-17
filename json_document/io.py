@@ -20,9 +20,13 @@ import decimal
 
 import simplejson
 
-class DocumentIO(object):
+
+
+class JSONIO(object):
     """
-    DocumentIO encapsulates loading and saving JSON objects.
+    JSONIO encapsulates loading and saving JSON files using
+    simplejson module.  It handes 'raw' json without any of
+    the additions specified in Document.
     """
 
     @classmethod
