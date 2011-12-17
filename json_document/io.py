@@ -67,8 +67,9 @@ class JSONIO(object):
                 When the text does not represent a correct JSON document.
         """
         object_pairs_hook = cls._get_dict_impl(retain_order)
-        return simplejson.load(stream, parse_float=decimal.Decimal,
-                         object_pairs_hook=object_pairs_hook)
+        return simplejson.load(
+            stream, parse_float=decimal.Decimal,
+            object_pairs_hook=object_pairs_hook)
 
     @classmethod
     def loads(cls, text, retain_order=True):
@@ -76,8 +77,9 @@ class JSONIO(object):
         Same as load() but reads data from a string
         """
         object_pairs_hook = cls._get_dict_impl(retain_order)
-        return simplejson.loads(text, parse_float=decimal.Decimal,
-                          object_pairs_hook=object_pairs_hook)
+        return simplejson.loads(
+            text, parse_float=decimal.Decimal,
+            object_pairs_hook=object_pairs_hook)
 
     @classmethod
     def dump(cls, stream, doc, human_readable=True, sort_keys=False):
@@ -99,8 +101,9 @@ class JSONIO(object):
             None
         """
         indent, separators = cls._get_indent_and_separators(human_readable)
-        simplejson.dump(doc, stream, use_decimal=True, indent=indent,
-                  separators=separators, sort_keys=sort_keys)
+        simplejson.dump(
+            doc, stream, use_decimal=True, indent=indent,
+            separators=separators, sort_keys=sort_keys)
 
     @classmethod
     def dumps(cls, doc, human_readable=True, sort_keys=False):
@@ -122,5 +125,6 @@ class JSONIO(object):
             JSON document as string
         """
         indent, separators = cls._get_indent_and_separators(human_readable)
-        return simplejson.dumps(doc, use_decimal=True, indent=indent,
-                          separators=separators, sort_keys=sort_keys)
+        return simplejson.dumps(
+            doc, use_decimal=True, indent=indent,
+            separators=separators, sort_keys=sort_keys)
