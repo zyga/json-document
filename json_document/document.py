@@ -289,7 +289,7 @@ class DocumentFragment(object):
                     item_schema = self.schema.items[item]
                 except IndexError:
                     # If that fails fall back to additionalItems (not
-                    # implemented in linaro_json yet)
+                    # implemented in json-schema-validator yet)
                     if self.schema.additionalItems is not False:
                         item_schema = self.schema.additionalItems
             elif isinstance(self.schema.items, dict):
