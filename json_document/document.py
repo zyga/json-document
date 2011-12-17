@@ -446,35 +446,35 @@ class Document(DocumentFragment):
         except ValidationError as ex:
             raise DocumentSchemaError(self, ex)
 
-    def _save(self):
+    def _save(self, loader):
         if self._pathname is None:
             raise ValueError("No pathname specified")
         # TODO: handle and wrap JSONEncodeError here
         with open(self._pathname, 'wt') as stream:
-            DocumentIO.dump(stream, self._value)
+            loader.dump(stream, self._value)
 
-    def _load(self):
+    def _load(self, loader):
         if self._pathname is None:
             raise ValueError("No pathname specified")
         try:
             with open(self._pathname, 'rt') as stream:
-                self._value = DocumentIO.load(stream)
+                self._value = loader.load(stream)
         except simplejson.JSONDecodeError as ex:
             raise DocumentSyntaxError(self, ex)
 
-    def save_as(self, pathname):
+    def save_as(self, pathname, loader):
         if pathname is not None:
             self._pathname = pathname
-        self.save()
+        self.save(loader)
 
-    def save(self):
+    def save(self, loader):
         if self._is_dirty:
             self._validate()
-            self._save()
+            self._save(loader)
             self._is_dirty = False
 
-    def load(self, ignore_missing=False):
+    def load(self, loader, ignore_missing=False):
         if os.path.exists(self._pathname) or not ignore_missing:
-            self._load()
+            self._load(loader)
             self._is_dirty = False
             self._validate()
