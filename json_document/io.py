@@ -50,7 +50,7 @@ class JSONIO(object):
     @classmethod
     def load(cls, stream, retain_order=True):
         """
-        Load and check a JSON document from the specified stream
+        Load a JSON document from the specified stream
 
         :Discussion:
             The document is read from the stream and parsed as JSON text.
@@ -58,10 +58,12 @@ class JSONIO(object):
         :Return value:
             The document loaded from the stream. If retain_order is True then
             the resulting objects are composed of ordered dictionaries. This
-            mode is slightly slower and consumes more memory.
+            mode is slightly slower and consumes more memory but allows one to
+            save the document exactly as it was before (apart from whitespace
+            differences).
 
         :Exceptions:
-            ValueError
+            ValueError (or a specialized subclass)
                 When the text does not represent a correct JSON document.
         """
         object_pairs_hook = cls._get_dict_impl(retain_order)
@@ -80,7 +82,7 @@ class JSONIO(object):
     @classmethod
     def dump(cls, stream, doc, human_readable=True, sort_keys=False):
         """
-        Save a JSON document to the specified stream
+        Dump JSON to a stream-like object
 
         :Discussion:
             If human_readable is True the serialized stream is meant to be
@@ -103,7 +105,7 @@ class JSONIO(object):
     @classmethod
     def dumps(cls, doc, human_readable=True, sort_keys=False):
         """
-        Save a JSON document as string
+        Dump JSON to a string
 
         :Discussion:
             If human_readable is True the serialized value is meant to be read
