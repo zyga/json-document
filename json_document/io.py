@@ -20,6 +20,7 @@ import decimal
 
 import simplejson
 
+# TODO: move json encode/decode error classes here
 
 
 class JSONIO(object):
