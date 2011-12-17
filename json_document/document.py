@@ -20,56 +20,13 @@ import copy
 import decimal
 import os
 
+import simplejson
+
 from json_schema_validator.errors import SchemaError, ValidationError
 from json_schema_validator.schema  import Schema
 from json_schema_validator.validator import Validator
-import simplejson
 
-
-class DocumentError(Exception):
-    """
-    Base class for all Document exceptions.
-    """
-
-    def __init__(self, document, msg):
-        self.document = document
-        self.msg = msg
-
-    def __str__(self):
-        return "{0}: {1}".format(
-            os.path.normpath(self.document.pathname), self.msg)
-
-
-class DocumentSyntaxError(DocumentError):
-    """
-    Syntax error in document
-    """
-
-    def __init__(self, document, error):
-        if not isinstance(error, simplejson.JSONDecodeError):
-            raise TypeError("error must be a JSONDecodeError subclass")
-        self.document = document
-        self.error = error
-
-    def __str__(self):
-        return "{0}: {1}".format(
-            os.path.normpath(self.document.pathname), self.error)
-
-
-class DocumentSchemaError(DocumentError):
-    """
-    Schema error in document
-    """
-
-    def __init__(self, document, error):
-        if not isinstance(error, ValidationError):
-            raise TypeError("error must be a ValidationError subclass")
-        self.document = document
-        self.error = error
-
-    def __str__(self):
-        return "{0}: {1}".format(
-            os.path.normpath(self.document.pathname), self.error)
+from json_document.errors import DocumentError, DocumentSyntaxError, DocumentSchemaError, OrphanedFragmentError
 
 
 class DocumentIO(object):
@@ -183,25 +140,6 @@ class DefaultValue(object):
 
 
 DefaultValue = DefaultValue()
-
-
-class OrphanedFragmentError(Exception):
-    """
-    Exception raised when an orphaned document fragment is being modified.
-
-    A fragment becomes orhpaned if a saved reference no longer belongs to any
-    document tree. This can happen when one revets a document fragment to
-    default value while still holding refereces do elements of that fragment.
-    """
-
-    def __init__(self, fragment):
-        self.fragment = fragment
-
-    def __str__(self):
-        return "Attempt to modify orphaned document fragment"
-
-    def __repr__(self):
-        return "{0}({1!r})".format(self.__class__.__name__, self.fragment)
 
 
 class DocumentFragment(object):
