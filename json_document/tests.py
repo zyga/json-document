@@ -21,10 +21,11 @@ from decimal import Decimal
 
 from json_schema_validator.errors import ValidationError
 from simplejson import OrderedDict
-from testtools import TestCase
+from testtools import TestCase, ExpectedException
 
 from json_document.document import DefaultValue, Document, DocumentFragment
 from json_document.io import JSONIO  
+from json_document import bridge
 
 
 class JSONIOLoadTests(TestCase):
@@ -622,3 +623,48 @@ class DocumentUsageTests(TestCase):
         foo = doc["foo"]
         doc.value = {}
         self.assertTrue(foo.is_orphaned)
+
+
+class DecoratorTests(TestCase):
+
+    class TestDocument(Document):
+
+        @bridge.fragment
+        def bridge_to_fragment(self):
+            """fragment"""
+            pass
+
+        @bridge.readonly
+        def bridge_to_readonly(self):
+            """readonly"""
+            pass
+
+        @bridge.readwrite
+        def bridge_to_readwrite(self):
+            """readwrite"""
+            pass
+
+    def setUp(self):
+        super(DecoratorTests, self).setUp()
+        self.doc = self.TestDocument()
+
+    def test_fragment(self):
+        obj = object()
+        self.doc["bridge_to_fragment"] = obj
+        self.assertIsInstance(self.doc.bridge_to_fragment, DocumentFragment) 
+        self.assertIs(self.doc.bridge_to_fragment.value, obj) 
+
+    def test_readonly(self):
+        obj = object()
+        self.doc["bridge_to_readonly"] = obj
+        self.assertIs(self.doc.bridge_to_readonly, obj)
+        with ExpectedException(AttributeError, "can't set attribute"):
+            self.doc.bridge_to_readonly = object()
+
+    def test_readwrite(self):
+        obj1 = object()
+        obj2 = object()
+        self.doc["bridge_to_readwrite"] = obj1
+        self.assertIs(self.doc.bridge_to_readwrite, obj1)
+        self.doc.bridge_to_readwrite = obj2
+        self.assertIs(self.doc.bridge_to_readwrite, obj2)
