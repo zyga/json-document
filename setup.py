@@ -54,6 +54,6 @@ setup(
     setup_requires=[
         'versiontools >= 1.8.2'],
     tests_require=[
-        'testtools',
+        'testtools >= 0.9.11',
         'mockfs >= 0.2'],
     zip_safe=True)
