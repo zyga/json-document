@@ -20,14 +20,15 @@ import decimal
 
 import simplejson
 
-# TODO: move json encode/decode error classes here
+
+JSONDecodeError = simplejson.decoder.JSONDecodeError
 
 
-class JSONIO(object):
+class JSON(object):
     """
-    JSONIO encapsulates loading and saving JSON files using
-    simplejson module.  It handes 'raw' json without any of
-    the additions specified in Document.
+    JSON encapsulates loading and saving JSON files using simplejson
+    module. It handes 'raw' json without any of the additions specified
+    in the Document class.
     """
 
     @classmethod
@@ -64,7 +65,7 @@ class JSONIO(object):
             differences).
 
         :Exceptions:
-            ValueError (or a specialized subclass)
+            JSONDecodeError
                 When the text does not represent a correct JSON document.
         """
         object_pairs_hook = cls._get_dict_impl(retain_order)
@@ -129,3 +130,8 @@ class JSONIO(object):
         return simplejson.dumps(
             doc, use_decimal=True, indent=indent,
             separators=separators, sort_keys=sort_keys)
+
+
+__all__ = ['JSON', 'JSONDecodeError']
+
+
