@@ -289,7 +289,7 @@ class DocumentFragmentSetTests(TestCase):
             parent=None,
             value={})
         fragment._document = fragment  # loop to make _is_dirty work
-        fragment.set("item", "value")
+        fragment["item"] = "value"
         self.assertEqual(fragment._value, {"item": "value"})
 
     def test_set_marks_document_dirty(self):
@@ -297,7 +297,7 @@ class DocumentFragmentSetTests(TestCase):
             document=FakeDocument(),
             parent=None,
             value={})
-        fragment.set("item", "value")
+        fragment["item"] = "value"
         self.assertTrue(fragment._document._is_dirty)
 
     def test_overwriting_set_mutates_value(self):
@@ -305,9 +305,9 @@ class DocumentFragmentSetTests(TestCase):
             document=FakeDocument(),
             parent=None,
             value={"item": "value"})
-        sub_fragment = fragment.get("item")
+        sub_fragment = fragment["item"]
         self.assertEqual(sub_fragment.value, "value")
-        fragment.set("item", "new value")
+        fragment["item"] = "new value"
         self.assertEqual(sub_fragment.value, "new value")
         self.assertEqual(fragment._value, {"item": "new value"})
 
@@ -316,7 +316,7 @@ class DocumentFragmentSetTests(TestCase):
             document=FakeDocument(),
             parent=None,
             value={"item": "value"})
-        fragment.set("item", "new value")
+        fragment["item"] = "new value"
         self.assertTrue(fragment._document._is_dirty)
 
     def test_overwriting_set_with_same_value_keeps_document_clean(self):
@@ -324,7 +324,7 @@ class DocumentFragmentSetTests(TestCase):
             document=FakeDocument(),
             parent=None,
             value={"item": "value"})
-        fragment.set("item", "value")
+        fragment["item"] = "value"
         self.assertFalse(fragment._document._is_dirty)
 
 
@@ -335,7 +335,7 @@ class DocumentFragmentGetTests(TestCase):
             document=None,
             parent=None,
             value={})
-        self.assertRaises(KeyError, fragment.get, "item")
+        self.assertRaises(KeyError, fragment.__getitem__, "item")
 
     def test_get_uses_existing_sub_value(self):
         fragment = DocumentFragment(
@@ -343,7 +343,7 @@ class DocumentFragmentGetTests(TestCase):
             parent=None,
             value={
                 "item": "value"})
-        self.assertEqual(fragment.get("item")._value, "value")
+        self.assertEqual(fragment["item"]._value, "value")
         self.assertIn("item", fragment._fragment_cache)
 
     def test_get_uses_default_value_for_missing_elements_with_schema(self):
@@ -357,7 +357,7 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "default": "default value"}}})
-        self.assertIs(fragment.get("item")._value, DefaultValue)
+        self.assertIs(fragment["item"]._value, DefaultValue)
         self.assertIn("item", fragment._fragment_cache)
 
     def test_get_passes_sub_schema_propertly_when_sub_value_exists(self):
@@ -372,7 +372,7 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "default": "default value"}}})
-        self.assertIs(fragment.get("item")._schema, fragment.schema.properties['item'])
+        self.assertIs(fragment["item"]._schema, fragment.schema.properties['item'])
 
     def test_get_passes_sub_item(self):
         fragment = DocumentFragment(
@@ -380,7 +380,7 @@ class DocumentFragmentGetTests(TestCase):
             parent=None,
             value={
                 "item": "value"})
-        self.assertEqual(fragment.get("item")._item, "item")
+        self.assertEqual(fragment["item"]._item, "item")
 
     def test_get_passes_sub_schema_propertly_when_sub_value_is_missing(self):
         fragment = DocumentFragment(
@@ -393,7 +393,7 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "default": "default value"}}})
-        self.assertIs(fragment.get("item")._schema, fragment.schema.properties['item'])
+        self.assertIs(fragment["item"]._schema, fragment.schema.properties['item'])
 
     def test_get_passes_sub_schema_properly_when_no_schema_is_around(self):
         fragment = DocumentFragment(
@@ -404,7 +404,7 @@ class DocumentFragmentGetTests(TestCase):
             item=None,
             schema={"type": "object"})
         # This is coming from additionalProperties.default schema which allows any objects.
-        self.assertEqual(fragment.get("item")._schema, {})
+        self.assertEqual(fragment["item"]._schema, {})
 
     def test_get_uses_sub_value_class_from_schema(self):
 
@@ -422,7 +422,7 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "__fragment_cls": SpecialDocumentFragment}}})
-        self.assertIsInstance(fragment.get("item"), DocumentFragment)
+        self.assertIsInstance(fragment["item"], DocumentFragment)
 
 
 class DocumentFragmentLengthTests(TestCase):

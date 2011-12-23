@@ -406,10 +406,6 @@ class DocumentFragment(object):
         else:
             raise TypeError("%r is not iterable" % self)
 
-    get = __getitem__
-
-    set = __setitem__
-
 
 class Document(DocumentFragment):
     """
