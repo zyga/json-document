@@ -285,10 +285,9 @@ class DocumentFragmentSetTests(TestCase):
 
     def test_set_mutates_value(self):
         fragment = DocumentFragment(
-            document=None,
+            document=FakeDocument(),
             parent=None,
             value={})
-        fragment._document = fragment  # loop to make _is_dirty work
         fragment["item"] = "value"
         self.assertEqual(fragment._value, {"item": "value"})
 
