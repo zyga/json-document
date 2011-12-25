@@ -50,6 +50,8 @@ class DocumentFragment(object):
     pointed to with the 'value' property.
     """
 
+    __slots__ = ('_document', '_parent', '_value', '_item', '_schema', '_fragment_cache')
+
     def __init__(self, document, parent, value, item=None, schema=None):
         self._document = document
         self._parent = parent
@@ -417,6 +419,8 @@ class Document(DocumentFragment):
     modification of the document.
     """
     document_schema = {"type": "object"}
+
+    __slots__ = DocumentFragment.__slots__ + ('_revision',)
 
     def __init__(self, value=None, schema=None): 
         """
