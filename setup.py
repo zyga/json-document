@@ -46,8 +46,7 @@ setup(
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Topic :: Software Development :: Build Tools",
-        "Topic :: Software Development :: Testing"
-    ],
+        "Topic :: Software Development :: Testing"],
     install_requires=[
         'json-schema-validator >= 2.1',
         'simplejson'],

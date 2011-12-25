@@ -133,5 +133,3 @@ class JSON(object):
 
 
 __all__ = ['JSON', 'JSONDecodeError']
-
-

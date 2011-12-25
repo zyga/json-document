@@ -85,7 +85,7 @@ def readwrite(func):
         return self[func.__name__].value
 
     def _set(self, new_value):
-        # XXX: Dear reader, see what __setitem__ does to understand why we don't assign
-        # to .value
+        # XXX: Dear reader, see what __setitem__ does to understand why we
+        # don't assign to .value
         self[func.__name__] = new_value
     return property(_get, _set, None, func.__doc__)

@@ -25,7 +25,11 @@ from json_schema_validator.errors import SchemaError, ValidationError
 from json_schema_validator.schema  import Schema
 from json_schema_validator.validator import Validator
 
-from json_document.errors import DocumentError, DocumentSyntaxError, DocumentSchemaError, OrphanedFragmentError
+from json_document.errors import (
+    DocumentError,
+    DocumentSchemaError,
+    DocumentSyntaxError,
+    OrphanedFragmentError)
 
 
 class DefaultValue(object):
@@ -50,7 +54,8 @@ class DocumentFragment(object):
     pointed to with the 'value' property.
     """
 
-    __slots__ = ('_document', '_parent', '_value', '_item', '_schema', '_fragment_cache')
+    __slots__ = ('_document', '_parent', '_value', '_item', '_schema',
+                 '_fragment_cache')
 
     def __init__(self, document, parent, value, item=None, schema=None):
         self._document = document
@@ -91,7 +96,7 @@ class DocumentFragment(object):
             self._fragment_cache = {}
             # Set the new value
             self._set_value(DefaultValue)
-            # Bump the document revision 
+            # Bump the document revision
             self._document._bump_revision()
 
     @property
@@ -160,7 +165,7 @@ class DocumentFragment(object):
             self._fragment_cache = {}
             # Set the new value
             self._set_value(new_value)
-            # Bump the document revision 
+            # Bump the document revision
             self._document._bump_revision()
 
     def _set_value(self, new_value):
@@ -171,7 +176,7 @@ class DocumentFragment(object):
             * Does NOT check for default values
             * Does NOT check for orphans
             * Does NOT invalidate fragment cache
-        
+
         Stuff that is done here:
             * Updates parent object container value (if has parent)
             * Updates _value
@@ -277,7 +282,8 @@ class DocumentFragment(object):
             try:
                 item_schema = self.schema.properties[item]
             except KeyError:
-                # If that fails try to use additionalProperties, unless it is False
+                # If that fails try to use additionalProperties,
+                # unless it is False
                 if self.schema.additionalProperties is not False:
                     item_schema = self.schema.additionalProperties
                 # If that fails then we have no schema, sorry
@@ -318,7 +324,7 @@ class DocumentFragment(object):
             elif allow_create is True:
                 self._ensure_not_default()
                 self._value[item] = create_value
-                # We need to manually bump the document revision 
+                # We need to manually bump the document revision
                 self._document._bump_revision()
                 item_value = create_value
             else:
@@ -422,7 +428,7 @@ class Document(DocumentFragment):
 
     __slots__ = DocumentFragment.__slots__ + ('_revision',)
 
-    def __init__(self, value=None, schema=None): 
+    def __init__(self, value=None, schema=None):
         """
         Construct a document with the specified value and schema.
 
@@ -440,14 +446,14 @@ class Document(DocumentFragment):
             value=value,
             item=None,
             schema=schema or self.__class__.document_schema)
-        # Initially set the revision to 0 
+        # Initially set the revision to 0
         self._revision = 0
 
     @property
     def revision(self):
         """
         Return the revision number of this document.
-    
+
         Each change increments this value by one.
         """
         return self._revision

@@ -23,7 +23,11 @@ from json_schema_validator.errors import ValidationError
 from simplejson import OrderedDict
 from testtools import TestCase, ExpectedException
 
-from json_document.document import DefaultValue, Document, DocumentFragment, DocumentPersistence
+from json_document.document import (
+    DefaultValue,
+    Document,
+    DocumentFragment,
+    DocumentPersistence)
 from json_document.serializers import JSON
 from json_document import bridge
 
@@ -35,9 +39,12 @@ class JSONTests(TestCase):
 
     def setUp(self):
         super(JSONTests, self).setUp()
-        self.text = '{"format": "Dashboard Bundle Format 1.0", "test_runs": []}'
+        self.text = ('{"format": "Dashboard Bundle Format 1.0", '
+                     '"test_runs": []}')
         self.stream = StringIO(self.text)
-        self.expected_doc = {"format": "Dashboard Bundle Format 1.0", "test_runs": []}
+        self.expected_doc = {
+            "format": "Dashboard Bundle Format 1.0",
+            "test_runs": []}
         self.expected_keys = ["format", "test_runs"]
 
     def test_loads__return_value(self):
@@ -94,17 +101,24 @@ class JSONDumpTests(TestCase):
             ("test_runs", []),
             ("format", "Dashboard Bundle Format 1.0"),
         ])
-        self.expected_readable_text = '{\n  "test_runs": [], \n  "format": "Dashboard Bundle Format 1.0"\n}'
-        self.expected_readable_sorted_text = '{\n  "format": "Dashboard Bundle Format 1.0", \n  "test_runs": []\n}'
-        self.expected_compact_text = '{"test_runs":[],"format":"Dashboard Bundle Format 1.0"}'
-        self.expected_compact_sorted_text = '{"format":"Dashboard Bundle Format 1.0","test_runs":[]}'
+        self.expected_readable_text = (
+            '{\n  "test_runs": [], \n  "format": '
+            '"Dashboard Bundle Format 1.0"\n}')
+        self.expected_readable_sorted_text = (
+            '{\n  "format": "Dashboard Bundle Format 1.0",'
+            ' \n  "test_runs": []\n}')
+        self.expected_compact_text = (
+            '{"test_runs":[],"format":"Dashboard Bundle Format 1.0"}')
+        self.expected_compact_sorted_text = (
+            '{"format":"Dashboard Bundle Format 1.0","test_runs":[]}')
 
     def test_dumps_produces_readable_ouptut(self):
         observed_text = JSON.dumps(self.doc, human_readable=True)
         self.assertEqual(observed_text, self.expected_readable_text)
 
     def test_dumps_produces_readable_sorted_ouptut(self):
-        observed_text = JSON.dumps(self.doc, human_readable=True, sort_keys=True)
+        observed_text = JSON.dumps(
+            self.doc, human_readable=True, sort_keys=True)
         self.assertEqual(observed_text, self.expected_readable_sorted_text)
 
     def test_dumps_produces_compact_ouptut(self):
@@ -112,7 +126,8 @@ class JSONDumpTests(TestCase):
         self.assertEqual(observed_text, self.expected_compact_text)
 
     def test_dumps_produces_compact_sorted_ouptut(self):
-        observed_text = JSON.dumps(self.doc, human_readable=False, sort_keys=True)
+        observed_text = JSON.dumps(
+            self.doc, human_readable=False, sort_keys=True)
         self.assertEqual(observed_text, self.expected_compact_sorted_text)
 
     def test_dump_produces_readable_output(self):
@@ -166,12 +181,7 @@ class JSONParsingTests(TestCase):
                         {
                             "test_case_id": "NOT RELEVANT",
                             "result": "unknown",
-                            "measurement": Decimal("1.5")
-                        }
-                    ]
-                }
-            ]
-        }
+                            "measurement": Decimal("1.5")}]}]}
         text = JSON.dumps(doc)
         self.assertIn("1.5", text)
 
@@ -256,7 +266,7 @@ class DocumentFragmnetOrhpanTests(TestCase):
 
     def test_is_orphaned_for_orphans(self):
         document = None
-        parent = None  
+        parent = None
         value = object()
         item = "item"
         fragment = DocumentFragment(document, parent, value, item)
@@ -383,7 +393,9 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "default": "default value"}}})
-        self.assertIs(fragment["item"]._schema, fragment.schema.properties['item'])
+        self.assertIs(
+            fragment["item"]._schema,
+            fragment.schema.properties['item'])
 
     def test_getitem_passes_sub_item(self):
         fragment = DocumentFragment(
@@ -393,7 +405,7 @@ class DocumentFragmentGetTests(TestCase):
                 "item": "value"})
         self.assertEqual(fragment["item"]._item, "item")
 
-    def test_getitem_passes_sub_schema_propertly_when_sub_value_is_missing(self):
+    def test_getitem_passes_sub_schema_when_sub_value_is_missing(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -404,17 +416,19 @@ class DocumentFragmentGetTests(TestCase):
                 "properties": {
                     "item": {
                         "default": "default value"}}})
-        self.assertIs(fragment["item"]._schema, fragment.schema.properties['item'])
+        self.assertIs(
+            fragment["item"]._schema,
+            fragment.schema.properties['item'])
 
     def test_get_passes_sub_schema_properly_when_no_schema_is_around(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
-            value={
-                "item": "value"},
+            value={"item": "value"},
             item=None,
             schema={"type": "object"})
-        # This is coming from additionalProperties.default schema which allows any objects.
+        # This is coming from additionalProperties.default schema which allows
+        # any objects.
         self.assertEqual(fragment["item"]._schema, {})
 
     def test_getitem_uses_sub_value_class_from_schema(self):
@@ -576,7 +590,7 @@ class DocumentTests(TestCase):
     def test_document_has_initial_revision(self):
         doc = Document()
         self.assertEqual(doc.revision, 0)
-        
+
     def test_document_is_empty_initially(self):
         doc = Document()
         self.assertEqual(doc._value, {})
@@ -662,8 +676,8 @@ class DecoratorTests(TestCase):
     def test_fragment(self):
         obj = object()
         self.doc["bridge_to_fragment"] = obj
-        self.assertIsInstance(self.doc.bridge_to_fragment, DocumentFragment) 
-        self.assertIs(self.doc.bridge_to_fragment.value, obj) 
+        self.assertIsInstance(self.doc.bridge_to_fragment, DocumentFragment)
+        self.assertIs(self.doc.bridge_to_fragment.value, obj)
 
     def test_readonly(self):
         obj = object()
