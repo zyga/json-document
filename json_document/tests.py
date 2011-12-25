@@ -200,7 +200,7 @@ class DocumentFragmentDefaultValueTests(TestCase):
             None, None, DefaultValue, None, {"default": "value"})
         self.assertTrue(fragment.is_default)
 
-    def test_revert_to_defaul(self):
+    def test_revert_to_default(self):
         document = FakeDocument()
         fragment = DocumentFragment(
             document, None, "value", None, {"default": "value"})
