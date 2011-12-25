@@ -75,8 +75,9 @@ class JSONTests(TestCase):
 
     def test_loads__with_disabled_retain_order__dict_class(self):
         doc = JSON.loads(self.text, retain_order=False)
+        expected_impl = dict
         observed_impl = type(doc)
-        self.assertEqual(observed_impl, dict)
+        self.assertEqual(observed_impl, expected_impl)
 
     def test_load__with_disabled_retain_order__dict_class(self):
         doc = JSON.load(self.stream, retain_order=False)
