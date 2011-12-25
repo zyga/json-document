@@ -133,14 +133,14 @@ Supported types
 ---------------
 
 Now let's expand that. So far we've only used objects (dictionaries). We 
-can use the following types in our documents::
+can use the following types in our documents:
 
- * Dictionaries (JSON objects, schema type "object")
- * Lists (JSON arrays, schema type "array")
- * Strings (and Unicode strings, schema type "string")
- * Integers, floating point numbers and Decimals (JSON numbers, schema types "integer", "number")
- * True and False (JSON true and false values, schema type "boolean")
- * None (JSON null value, schema type "null")
+* Dictionaries (JSON objects, schema type "object")
+* Lists (JSON arrays, schema type "array")
+* Strings (and Unicode strings, schema type "string")
+* Integers, floating point numbers and Decimals (JSON numbers, schema types "integer", "number")
+* True and False (JSON true and false values, schema type "boolean")
+* None (JSON null value, schema type "null")
 
 You can use any of those items as the root object.
 
@@ -243,8 +243,8 @@ We can do better than that. Let's start with describing our configuration schema
 
 There are a couple of new elements here:
 
- * The default value is specified
- * The property is marked as optional
+* The default value is specified
+* The property is marked as optional
 
 Let's create a configuration object to see how this works::
 
