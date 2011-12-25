@@ -342,14 +342,14 @@ class DocumentFragmentSetTests(TestCase):
 
 class DocumentFragmentGetTests(TestCase):
 
-    def test_get_raises_item_error_for_missing_sub_values(self):
+    def test_getitem_raises_item_error_for_missing_sub_values(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
             value={})
         self.assertRaises(KeyError, fragment.__getitem__, "item")
 
-    def test_get_uses_existing_sub_value(self):
+    def test_getitem_uses_existing_sub_value(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -358,7 +358,7 @@ class DocumentFragmentGetTests(TestCase):
         self.assertEqual(fragment["item"]._value, "value")
         self.assertIn("item", fragment._fragment_cache)
 
-    def test_get_uses_default_value_for_missing_elements_with_schema(self):
+    def test_getitem_uses_default_value_for_missing_elements_with_schema(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -372,7 +372,7 @@ class DocumentFragmentGetTests(TestCase):
         self.assertIs(fragment["item"]._value, DefaultValue)
         self.assertIn("item", fragment._fragment_cache)
 
-    def test_get_passes_sub_schema_propertly_when_sub_value_exists(self):
+    def test_getitem_passes_sub_schema_propertly_when_sub_value_exists(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -386,7 +386,7 @@ class DocumentFragmentGetTests(TestCase):
                         "default": "default value"}}})
         self.assertIs(fragment["item"]._schema, fragment.schema.properties['item'])
 
-    def test_get_passes_sub_item(self):
+    def test_getitem_passes_sub_item(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -394,7 +394,7 @@ class DocumentFragmentGetTests(TestCase):
                 "item": "value"})
         self.assertEqual(fragment["item"]._item, "item")
 
-    def test_get_passes_sub_schema_propertly_when_sub_value_is_missing(self):
+    def test_getitem_passes_sub_schema_propertly_when_sub_value_is_missing(self):
         fragment = DocumentFragment(
             document=None,
             parent=None,
@@ -418,7 +418,7 @@ class DocumentFragmentGetTests(TestCase):
         # This is coming from additionalProperties.default schema which allows any objects.
         self.assertEqual(fragment["item"]._schema, {})
 
-    def test_get_uses_sub_value_class_from_schema(self):
+    def test_getitem_uses_sub_value_class_from_schema(self):
 
         class SpecialDocumentFragment(DocumentFragment):
             pass
