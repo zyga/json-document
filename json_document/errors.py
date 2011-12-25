@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+import simplejson
+
+from json_schema_validator.errors import ValidationError
+
 
 class DocumentError(Exception):
     """

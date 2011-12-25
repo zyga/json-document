@@ -17,19 +17,11 @@
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
-import os
-
-import simplejson
-
-from json_schema_validator.errors import SchemaError, ValidationError
+from json_schema_validator.errors import SchemaError
 from json_schema_validator.schema  import Schema
 from json_schema_validator.validator import Validator
 
-from json_document.errors import (
-    DocumentError,
-    DocumentSchemaError,
-    DocumentSyntaxError,
-    OrphanedFragmentError)
+from json_document.errors import OrphanedFragmentError
 
 
 class DefaultValue(object):
