@@ -176,9 +176,15 @@ class JSONParsingTests(TestCase):
 
 
 class FakeDocument(object):
-    
-    def __init__(self):
-        self._is_dirty = False
+
+    _revision = None
+
+    def _bump_revision(self):
+        self._revision = object()
+
+    @property
+    def revision(self):
+        return self._revision
 
 
 class DocumentFragmentDefaultValueTests(TestCase):
@@ -202,10 +208,11 @@ class DocumentFragmentDefaultValueTests(TestCase):
 
     def test_revert_to_default_marks_document_as_dirty(self):
         document = FakeDocument()
+        start_revision = document.revision
         fragment = DocumentFragment(
             document, None, "value", None, {"default": "value"})
         fragment.revert_to_default()
-        self.assertTrue(document._is_dirty)
+        self.assertNotEqual(document.revision, start_revision)
 
     def test_default_value(self):
         fragment = DocumentFragment(
@@ -283,25 +290,30 @@ class DocumentFragmentValueReadTests(TestCase):
 
 class DocumentFragmentSetTests(TestCase):
 
-    def test_set_mutates_value(self):
+    def setUp(self):
+        super(DocumentFragmentSetTests, self).setUp()
+        self.document = FakeDocument()
+        self.start_revision = self.document.revision
+
+    def test_setitem_mutates_value(self):
         fragment = DocumentFragment(
-            document=FakeDocument(),
+            document=self.document,
             parent=None,
             value={})
         fragment["item"] = "value"
         self.assertEqual(fragment._value, {"item": "value"})
 
-    def test_set_marks_document_dirty(self):
+    def test_setitem_bumps_revision(self):
         fragment = DocumentFragment(
-            document=FakeDocument(),
+            document=self.document,
             parent=None,
             value={})
         fragment["item"] = "value"
-        self.assertTrue(fragment._document._is_dirty)
+        self.assertNotEqual(self.document.revision, self.start_revision)
 
-    def test_overwriting_set_mutates_value(self):
+    def test_overwriting_setitem_mutates_value(self):
         fragment = DocumentFragment(
-            document=FakeDocument(),
+            document=self.document,
             parent=None,
             value={"item": "value"})
         sub_fragment = fragment["item"]
@@ -310,21 +322,21 @@ class DocumentFragmentSetTests(TestCase):
         self.assertEqual(sub_fragment.value, "new value")
         self.assertEqual(fragment._value, {"item": "new value"})
 
-    def test_overwriting_set_marks_document_as_dirty(self):
+    def test_overwriting_setitem_bumps_revision(self):
         fragment = DocumentFragment(
-            document=FakeDocument(),
+            document=self.document,
             parent=None,
             value={"item": "value"})
         fragment["item"] = "new value"
-        self.assertTrue(fragment._document._is_dirty)
+        self.assertNotEqual(self.document.revision, self.start_revision)
 
-    def test_overwriting_set_with_same_value_keeps_document_clean(self):
+    def test_overwriting_setitem_with_same_value_retains_revision(self):
         fragment = DocumentFragment(
-            document=FakeDocument(),
+            document=self.document,
             parent=None,
             value={"item": "value"})
         fragment["item"] = "value"
-        self.assertFalse(fragment._document._is_dirty)
+        self.assertEqual(self.document.revision, self.start_revision)
 
 
 class DocumentFragmentGetTests(TestCase):
@@ -561,9 +573,9 @@ class DocumentFragmentIterTests(TestCase):
 
 class DocumentTests(TestCase):
 
-    def test_document_is_not_dirty_initially(self):
+    def test_document_has_initial_revision(self):
         doc = Document()
-        self.assertFalse(doc._is_dirty)
+        self.assertEqual(doc.revision, 0)
         
     def test_document_is_empty_initially(self):
         doc = Document()

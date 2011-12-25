@@ -89,8 +89,8 @@ class DocumentFragment(object):
             self._fragment_cache = {}
             # Set the new value
             self._set_value(DefaultValue)
-            # Mark the document as dirty
-            self._document._is_dirty = True
+            # Bump the document revision 
+            self._document._bump_revision()
 
     @property
     def default_value(self):
@@ -144,8 +144,8 @@ class DocumentFragment(object):
         fragment.is_default will return False. If you want to "set the default
         value" use fragment.revert_to_default() explicitly.
 
-        Setting a value that is different from the current value marks the
-        whole document as dirty.
+        Setting a value that is different from the current value bumps the
+        revision of the whole document.
         """
         self._ensure_not_orphaned()
         if self._value != new_value:
@@ -158,8 +158,8 @@ class DocumentFragment(object):
             self._fragment_cache = {}
             # Set the new value
             self._set_value(new_value)
-            # Mark the document as dirty
-            self._document._is_dirty = True
+            # Bump the document revision 
+            self._document._bump_revision()
 
     def _set_value(self, new_value):
         """
@@ -316,8 +316,8 @@ class DocumentFragment(object):
             elif allow_create is True:
                 self._ensure_not_default()
                 self._value[item] = create_value
-                #  We need to mark the object as dirty manually
-                self._document._is_dirty = True
+                # We need to manually bump the document revision 
+                self._document._bump_revision()
                 item_value = create_value
             else:
                 raise ex
@@ -410,67 +410,55 @@ class DocumentFragment(object):
 class Document(DocumentFragment):
     """
     Class representing a smart JSON document
+
+    A document is also a document fragment, thus is inherits all of its
+    properties.  There are two key differences: a document has no parent
+    fragment and it holds the revision counter that is incremented on each
+    modification of the document.
     """
     document_schema = {"type": "object"}
 
-    def __init__(self, pathname=None, schema=None):
-        if pathname is not None and not pathname.endswith(".json"):
-            raise DocumentError(self, "JSON file must have .json extension")
-        self._is_dirty = False
-        self._pathname = pathname
+    def __init__(self, value=None, schema=None): 
+        """
+        Construct a document with the specified value and schema.
+
+        The value defaults to an empty object. The schema defaults to
+        document_schema attribute on the class object (which by default
+        is a very simple schema for any objects).
+        """
+        # Start with an empty object by default
+        if value is None:
+            value = {}
+        # Initialize DocumentFragment
         super(Document, self).__init__(
             document=self,
             parent=None,
-            value={},
+            value=value,
             item=None,
-            schema=schema or self.document_schema)
+            schema=schema or self.__class__.document_schema)
+        # Initially set the revision to 0 
+        self._revision = 0
 
     @property
-    def is_dirty(self):
+    def revision(self):
+        """
+        Return the revision number of this document.
+    
+        Each change increments this value by one.
+        """
+        return self._revision
+
+    def _bump_revision(self):
+        """
+        Increment the document revision number.
+
+        This is a private method, it is called by DocumentFragment
+        """
+        self._revision += 1
+
         """
         Returns True when the document has been modified and needs to be saved
         """
         return self._is_dirty
 
-    @property
-    def pathname(self):
-        return self._pathname
 
-    def _validate(self):
-        try:
-            super(Document, self).validate()
-        except ValidationError as ex:
-            raise DocumentSchemaError(self, ex)
-
-    def _save(self, loader):
-        if self._pathname is None:
-            raise ValueError("No pathname specified")
-        # TODO: handle and wrap JSONEncodeError here
-        with open(self._pathname, 'wt') as stream:
-            loader.dump(stream, self._value)
-
-    def _load(self, loader):
-        if self._pathname is None:
-            raise ValueError("No pathname specified")
-        try:
-            with open(self._pathname, 'rt') as stream:
-                self._value = loader.load(stream)
-        except simplejson.JSONDecodeError as ex:
-            raise DocumentSyntaxError(self, ex)
-
-    def save_as(self, pathname, loader):
-        if pathname is not None:
-            self._pathname = pathname
-        self.save(loader)
-
-    def save(self, loader):
-        if self._is_dirty:
-            self._validate()
-            self._save(loader)
-            self._is_dirty = False
-
-    def load(self, loader, ignore_missing=False):
-        if os.path.exists(self._pathname) or not ignore_missing:
-            self._load(loader)
-            self._is_dirty = False
-            self._validate()
