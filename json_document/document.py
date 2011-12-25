@@ -458,9 +458,44 @@ class Document(DocumentFragment):
         """
         self._revision += 1
 
-        """
-        Returns True when the document has been modified and needs to be saved
-        """
-        return self._is_dirty
 
+class DocumentPersistence(object):
+    """
+    Simple glue layer between document and storage
 
+        document <-> serializer <-> storage
+
+    You can have any number of persistence instances associated with a
+    single document.
+    """
+
+    def __init__(self, document, storage, serializer=None):
+        self.document = document
+        self.storage = storage
+        self.serializer = serializer
+        self.last_revision = None
+
+    def load(self):
+        """
+        Load the document from the storage layer
+        """
+        text = self.storage.read()
+        obj = self.serializer.loads(text)
+        self.doc.value = obj
+        self.last_revision = self.doc.revision
+
+    def save(self):
+        """
+        Save the document to the storage layer.
+
+        The document is only saved if the document was modified since
+        it was last saved. The document revision is non-persistent
+        property (so you cannot use it as a version control system) but
+        as long as the document instance is alive you can optimize
+        saving easily.
+        """
+        if self.last_revision != self.document.revision:
+            obj = self.document.value
+            text = self.serializer.dumps(obj)
+            self.storage.write(text)
+            self.last_revision = self.document.revision
