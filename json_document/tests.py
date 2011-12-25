@@ -353,8 +353,7 @@ class DocumentFragmentGetTests(TestCase):
         fragment = DocumentFragment(
             document=None,
             parent=None,
-            value={
-                "item": "value"})
+            value={"item": "value"})
         self.assertEqual(fragment["item"]._value, "value")
         self.assertIn("item", fragment._fragment_cache)
 
