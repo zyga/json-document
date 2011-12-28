@@ -7,10 +7,10 @@ powerful default system also allows developers to access an empty document and
 see the default values from the schema without any code changes.
 
 
-Basics
-^^^^^^
+Basic features
+^^^^^^^^^^^^^^
 
-If you have a few seconds, just read the next two sections.
+If you have a few seconds, just read the next two sub-sections.
 
 Setting and accessing value
 ---------------------------
@@ -120,8 +120,8 @@ required or not. By default everything is required, unless marked optional::
     >>> joe["name"].schema.optional
     False
 
-Digging deeper
-^^^^^^^^^^^^^^
+Core features
+^^^^^^^^^^^^^
 
 So now you know roughly about documents and schema. You know that accessing
 items on a document instance returns DocumentFragment objects (that have a
@@ -286,14 +286,17 @@ Reverting to defaults
 
 Let's suppose our application wants to provide a "revert to defaults" button
 that resets all configuration options to what was provided out of the box.
+JSON document has a sweet feature to support this kind of behavior.
 
-Let's start with some settings we loaded for this user::
+Let's start with some settings we loaded for this user (we are reusing the
+schema from the previous example)::
 
     >>> config = Document({"save_on_exit": True}, schema)
 
-The first thing to point out is that a default value is a 'special' thing. Being
-equal to the default value is not the same as being default. Here, the save_on_exit
-option is True, the same as the default from the schema. It is not default though::
+The first thing to point out is that a default value is a 'special' thing.
+Being equal to the default value is not the same as being default. Here, the
+save_on_exit option is True, the same as the default from the schema. It is not
+default though::
 
     >>> config["save_on_exit"].is_default
     False
@@ -306,8 +309,339 @@ To really make it default you need to call the revert_to_default() method::
     >>> config["save_on_exit"].is_default
     True
     
-When you do that the document is transformed and the part we've customized
-is removed::
+When you do that the document is transformed and the part we've customized is
+removed. Obviously without a default value in the schema this method would
+raise an exception with an appropriate message::
 
     >>> config.value
     {}
+
+Defaults are a very powerful system. Used correctly they allow applications to
+recover from manually edited configuration files (config errors), allow users
+to customize parts of their configuration while allowing defaults to evolve
+with future versions and significantly simplify appliation configuration
+handling for programmers where less checking is needed, especially when coupled
+with JSON schema validation that can not only shape but constrain values of
+specific properties. 
+
+Fragments and references
+------------------------
+
+So far in this document we've been referring to document fragments by accessing
+dictionary items and array elements on the root document object. Accessing
+those items transparently creates DocumentFragment instances. Wrapper objects
+pointing to a sub-tree of the document object. It is possible to save those
+references and use them freely for convenience. Let's see how this works::
+
+    >>> doc = Document()
+    >>> doc["list"] = [1, 2, 3]
+    >>> doc["dict"] = {"hello": "world"}
+    >>> doc["value"] = "I'm a plain string"
+
+For clarity, this is how the document looks like now::
+
+    >>> doc.value
+    {'dict': {'hello': 'world'}, 'list': [1, 2, 3], 'value': "I'm a plain string"}
+
+Let's obtain a reference to the list::
+
+    >>> lst = doc["list"]
+
+A document fragment is much like a document itself (Document is also a
+DocumentFragment subclass) it has a .value and .schema properties. It has a
+revert_to_default() method and everything you've learned so far.
+
+It can also be modified, and here it gets interesting. You can modify the value
+by assigning to the .value property::
+
+    >>> lst.value
+    [1, 2, 3]
+    >>> lst.value = [4, 5]
+    >>> lst.value
+    [4, 5]
+
+The interesting part is that this automatically integrates into the document
+this fragment is a part of::
+
+    >>> doc.value
+    {'dict': {'hello': 'world'}, 'list': [4, 5], 'value': "I'm a plain string"}
+
+In general it you can freely modify the tree and it will work as expected::
+
+    >>> dct = doc["dict"]
+    >>> dct.value = {'hello': 'there'}
+    >>> val = doc["value"]
+    >>> val.value = 42
+    >>> doc.value
+    {'dict': {'hello': 'there'}, 'list': [4, 5], 'value': 42}
+
+You can also use mutating methods (those that alter the state of the value), in
+this case you are not assigning a new value to the .value property but rather
+calling some method on it::
+
+    >>> lst.value.append(6)
+    >>> dct.value['hello'] = 'joe'
+    >>> doc.value
+    {'dict': {'hello': 'joe'}, 'list': [4, 5, 6], 'value': 42}
+
+Fragments also have a few interesting properties. The .document property allows
+you to reach the document object this fragment is a part of. The .parent
+property points to the parent fragment (say, if you have a fragment to member
+of a list then the .parent will be pointing to the list itself). The .item
+property is perhaps named confusingly but it is the index of this fragment in
+the parent fragment (the list index or dictionary key)
+
+Fragments also have few special methods that make using them more natural in
+python. You can check the length (of strings, dicts and lists), you can check
+for membership using the 'foo in bar' syntax. You can also iterate over
+containers (lists and dicts only)
+
+Orphaned fragments
+------------------
+
+Since you can keep references to fragments around for as long as you like it is
+possible to create an interesting situation. It is only interesting in a
+problematic way though. A fragment can become orphaned (and useless) when its
+parent (or its parent, all the way up to the root document object) are
+overwritten. Let's see how this works::
+
+    >>> doc = Document()
+    >>> doc['foo'] = 'bar'
+    >>> foo = doc['foo']
+    >>> doc.value = {}
+    >>> foo.is_orphaned
+    True
+
+So now the ``foo`` fragment is an orphaned. A few things happen when this occurs:
+
+* The .document property is set to None
+* The .parent property is set to None
+* The .value is set to a deep copy of the original value
+
+So for all intents and purposes an orphaned node is independent leftover that
+is totally disconnected from the original. This means that changing its value
+is not going to alter the document anymore (since this would make no sense). In
+fact, attempting to change the value will raise an OrphanedFragmentError::
+
+    >>> foo.value = "barf"
+    Traceback (most recent call last):
+    ...
+    OrphanedFragmentError: Attempt to modify orphaned document fragment
+
+Usually when you see this it indicates a programming error. If you want to keep
+using something don't overwrite its parent. For convenience it is not an error
+to read from an orphaned fragment as it is useful in some cases and provides
+some level of 'transaction isolation' where you can bet that you've got a
+working fragment (just that the writes will fail)
+
+Advanced features
+^^^^^^^^^^^^^^^^^
+
+If you got this far you know pretty much everything there is about the basic
+feature set. The rest of this document will make you more productive by letting
+you write less code and by letting you write code that is more natural to read
+and use later.
+
+Custom fragments
+----------------
+
+Since you get fragment objects every time you access some of its parts would
+not it be nice to be able to put your custom methods there? This way you could
+somewhat forget about working with JSON and see this as a part of your class
+hierarchy.
+
+I thought it was useful so here it is. You need to have a schema for your
+document the reason for that is we'll be embedding special schema elements that
+will override the instantiated fragment class. Usually this is simple but it is
+boiler-plate-ish at times::
+
+For the sake of documentation we'll be writing a word counter program that will
+store the count of each encountered word. We'll need to subclass
+DocumentFragment so let's pull that in to our namespace::
+
+    >>> from json_document.document import DocumentFragment
+
+The Word class is what will represent each word we've encountered. We'll start
+by keeping it simple, just a inc() method::
+
+    >>> class Word(DocumentFragment):
+    ...
+    ...     def inc(self): 
+    ...         self.value += 1
+
+
+The WordCounter class will be a custom Document that just has the schema. Here
+we also see that the schema can be defined once in the document class by
+creating a ``document_schema`` property. This is convenient when you have one
+schema and want to make the life of your users easier. The schema defines an
+object (with a default value of {}). This object can have additional properties
+(that is, properties not explicitly mentioned in the schema) but each one has
+to be an integer. If missing the default value of each property is zero.
+Finally the special ``__fragment_cls`` schema entry instructs which
+DocumentFragment sub-class to instantiate::
+
+    >>> class WordCounter(Document):
+    ...
+    ...     document_schema = {
+    ...         'type': 'object',
+    ...         'default': {},
+    ...         'additionalProperties': {
+    ...             'type': 'integer',
+    ...             'default': 0,
+    ...             '__fragment_cls': Word
+    ...         }
+    ...     }
+
+Having done that we can now start using this::
+
+    >>> doc = WordCounter()
+
+Default values work::
+
+    >>> doc['json'].value
+    0
+
+As did our custom class declaration::
+
+    >>> for word in "json is a nice thing to keep your data, json".split():
+    ...     doc[word].inc()
+
+Finally the data is saved and we can inspect it or save it later::
+
+    >>> doc['json'].value
+    2
+
+Value bridge
+---------------
+
+So we have all the nice features so far, we even have custom fragment classes
+to keep our code more maintainable and readable. The last thing that was
+annoying me was the need to use dictionary notation to access my fragments. I
+wanted to use object traversal notation instead. I ended up writing a lot of
+properties that were just exposing the fragment in a more natural syntax.
+
+Let's see what it was like::
+
+    >>> class Config(Document):
+    ...
+    ...     document_schema = {
+    ...         'type': 'object',
+    ...         'default': {},
+    ...         'properties': {
+    ...             'save_on_exit': {
+    ...                 'type': 'bool',
+    ...                 'default': True 
+    ...             }
+    ...         }
+    ...     }
+    ...
+    ...     @property
+    ...     def save_on_exit(self):
+    ...         return self['save_on_exit']
+
+    >>> conf = Config()
+    >>> conf.save_on_exit.value
+    True
+
+It worked but was somewhat tedious (I had to repeat the name of the property.
+It was also annoying if it the property was a simple value (not something more
+complicated that itself would be having extra methods/state) and I had to type
+.value all the time.
+
+So I wrote three good decorators that made this easy. They are all in the bridge module::
+
+    >>> from json_document import bridge
+
+We can now improve our Config class with one of them the 'readwrite' bridge::
+
+    >>> class BetterConfig(Config):
+    ...
+    ...     @bridge.readwrite
+    ...     def save_on_exit(self):
+    ...         ''' documentation on this property '''
+ 
+The intent and code is very clear, it simply allows you to read and write the
+.value directly, without having the extra lookup on your side. It also gives
+your JSON document pythonic look and documentation.
+
+    >>> conf = BetterConfig()
+    >>> conf.save_on_exit
+    True
+    >>> conf.save_on_exit = False
+    >>> conf.save_on_exit
+    False
+
+If something is not really going to change (say you are only reading a part of
+a document that is modified by third party program) you can make that explicit
+in your code by using ``bridge.readonly`` instead.
+
+Fragment bridge
+---------------
+
+Fragment bridge is very similar to the value bridge (readonly and readwrite)
+but instead of returning the value it returns the fragment itself. It allows
+for more readable code that can still access all the methods and properties
+that DocumentFragment provides.
+
+I found it useful to document my JSON structure on the python side by mapping
+larger pieces of the schema to custom classes and putting fragment bridges in
+the document class.
+
+Let's say you have a person record with first and last name strings::
+
+    >>> class PersonName(DocumentFragment):
+    ...     """ Person's name """
+    ...
+    ...     @bridge.readwrite
+    ...     def first(self):
+    ...         """ First name """
+    ...
+    ...     @bridge.readwrite
+    ...     def last(self):
+    ...         """ Last name """
+    ...
+    ...     @property
+    ...     def full(self):
+    ...         return "%s %s" % (self.first, self.last)
+
+    >>> class Person(Document):
+    ...     """ Person record """
+    ...
+    ...     document_schema = {
+    ...         'type': object,
+    ...         'properties': {
+    ...             'name': {
+    ...                 'type': 'object',
+    ...                 'default': {},
+    ...                 '__fragment_cls': PersonName,
+    ...                 'properties': {
+    ...                     'first': {
+    ...                         'type': 'string'
+    ...                     },
+    ...                     'last': {
+    ...                         'type': 'string'
+    ...                     }
+    ...                 }
+    ...             }
+    ...         }
+    ...     }
+    ...
+    ...     @bridge.fragment
+    ...     def name(self):
+    ...         """ Name data """
+
+Uh, that was verbose, the good part is that ``after`` the bulky class is
+written we can write lean code using that class. Let's see how this works::
+
+    >>> john = Person()
+    >>> john.name.first = "John"
+    >>> john.name.last = "Doe"
+    >>> john.name.full
+    'John Doe'
+    >>> john.value
+    {'name': {'last': 'Doe', 'first': 'John'}}
+
+Did you notice this was a JSON object? Nice eh :-)
+
+That's it
+
