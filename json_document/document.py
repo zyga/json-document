@@ -133,7 +133,7 @@ class DocumentFragment(object):
             # Purge the fragment cache from this fragment
             self._fragment_cache = {}
             # Set the new value
-            self._set_value(DefaultValue)
+            self._lowlevel_set_value(DefaultValue)
             # Bump the document revision
             self._document._bump_revision()
 
@@ -172,36 +172,13 @@ class DocumentFragment(object):
         if self._schema is not None:
             Validator.validate(self.schema, self.value)
 
-    @property
-    def value(self):
-        """
-        Get the value of this fragment.
-
-        This method transparently gets default values from the schema.
-        """
+    def _get_value(self):
         if self.is_default:
             return self.default_value
         else:
             return self._value
 
-    @value.setter
-    def value(self, new_value):
-        """
-        Set the value of this fragment.
-
-        Setting a value instantiates default values in this or any parent
-        fragment. That is, if the value of this fragment or any of the parent
-        fragments is default (fragment.is_default returns true), then the
-        default value is copied and used as the effective value instead.
-
-        When fragment.is_default is True setting any value (including the value
-        of fragment.default_value) will overwrite the value so that
-        fragment.is_default will return False. If you want to "set the default
-        value" use fragment.revert_to_default() explicitly.
-
-        Setting a value that is different from the current value bumps the
-        revision of the whole document.
-        """
+    def _set_value(self, new_value):
         self._ensure_not_orphaned()
         if self._value != new_value:
             # Ensure there are no defaults around
@@ -212,11 +189,32 @@ class DocumentFragment(object):
             # Purge the fragment cache from this fragment
             self._fragment_cache = {}
             # Set the new value
-            self._set_value(new_value)
+            self._lowlevel_set_value(new_value)
             # Bump the document revision
             self._document._bump_revision()
 
-    def _set_value(self, new_value):
+    value = property(_get_value, _set_value, None, """
+        Value being wrapped by this document fragment.
+
+        Getting reads the value (if not :attr:`is_default`) from the document
+        or transparently returns the default values from the schema (if
+        :attr:`default_value_exists`).
+
+        Setting a value instantiates default values in this or any parent
+        fragment. That is, if the value of this fragment or any of the parent
+        fragments is default (:attr:`is_default` returns True), then the
+        default value is copied and used as the effective value instead.
+
+        When :attr:`is_default` is True setting any value (including the value
+        of :attr:`default_value`) will overwrite the value so that
+        :attr:`is_default` will return False. If you want to *set the default
+        value* use :meth:`revert_to_default()` explicitly.
+
+        Setting a value that is different from the current value bumps the
+        revision of the whole document.
+        """)
+
+    def _lowlevel_set_value(self, new_value):
         """
         Low-level set value.
 
@@ -250,7 +248,7 @@ class DocumentFragment(object):
         if self._value is DefaultValue:
             if self._parent is not None:
                 self._parent._ensure_not_default()
-            self._set_value(copy.deepcopy(self.schema.default))
+            self._lowlevel_set_value(copy.deepcopy(self.schema.default))
 
     def _ensure_not_orphaned(self):
         """
