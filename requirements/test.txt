@@ -1,0 +1,5 @@
+testtools >= 0.9.11
+nose
+nose-cover3
+coverage>=3.0
+mockfs >= 0.2
