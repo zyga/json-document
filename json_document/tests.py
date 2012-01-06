@@ -265,7 +265,7 @@ class DocumentFragmentMiscPropertiesTests(TestCase):
         self.assertIs(fragment.parent, parent)
 
 
-class DocumentFragmnetOrhpanTests(TestCase):
+class DocumentFragmentOrhpanTests(TestCase):
     """
     Tests related to orphaned fragments
     """
