@@ -5,4 +5,4 @@
 doc/_build
 build
 dist
-venv
+.tox
