@@ -19,11 +19,14 @@
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import print_function
+
 try:
     from setuptools import setup, find_packages
-except ImportError:
-    print "This package requires setuptools to be configured"
-    print "It can be installed with debian/ubuntu package python-setuptools"
+except ImportError as exc:
+    print("This package requires setuptools to be configured")
+    print("It can be installed with debian/ubuntu package python-setuptools")
+    print(exc)
     raise
 
 
