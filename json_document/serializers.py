@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+json_document.serializers
+-------------------------
+Document serializer classes
+"""
+
 import decimal
 
 import simplejson
@@ -26,9 +32,9 @@ JSONDecodeError = simplejson.decoder.JSONDecodeError
 
 class JSON(object):
     """
-    JSON encapsulates loading and saving JSON files using simplejson
-    module. It handes 'raw' json without any of the additions specified
-    in the Document class.
+    JSON class encapsulates loading and saving JSON files using simplejson
+    module. It handles 'raw' json without any of the additions specified in the
+    :class:`~json_document.document.Document` class.
     """
 
     @classmethod

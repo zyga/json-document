@@ -16,6 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+json_document.storage
+---------------------
+
+Storage classes (for storing serializer output)
+"""
+
 import abc
 import errno
 
@@ -42,7 +49,11 @@ class IStorage(object):
 
 class FileStorage(IStorage):
     """
-    File-based storage
+    File-based storage class.
+
+    This class is used in conjunction with
+    :class:`~json_document.document.DocumentPersistance` to *bind* a Document
+    to a file (via a serializer).
     """
 
     def __init__(self, pathname, ignore_missing=False):

@@ -16,6 +16,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Exceptions
+==========
+
+.. autoexception:: DocumentError
+
+.. autoexception:: DocumentSyntaxError
+
+.. autoexception:: DocumentSchemaError
+
+.. autoexception:: OrphanedFragmentError 
+
+"""
+
 import os
 
 import simplejson
@@ -73,9 +87,9 @@ class OrphanedFragmentError(Exception):
     """
     Exception raised when an orphaned document fragment is being modified.
 
-    A fragment becomes orhpaned if a saved reference no longer belongs to any
-    document tree. This can happen when one revets a document fragment to
-    default value while still holding refereces do elements of that fragment.
+    A fragment becomes orphaned if a saved reference no longer belongs to any
+    document tree. This can happen when one reverts a document fragment to
+    default value while still holding references do elements of that fragment.
     """
 
     def __init__(self, fragment):

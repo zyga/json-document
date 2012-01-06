@@ -16,6 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+json_document.tests
+-------------------
+
+Unit tests for this package
+"""
+
 from StringIO import StringIO
 from decimal import Decimal
 
@@ -94,6 +101,9 @@ class JSONTests(TestCase):
 
 
 class JSONDumpTests(TestCase):
+    """
+    Sanity checks for various serialization options
+    """
 
     def setUp(self):
         super(JSONDumpTests, self).setUp()
@@ -156,6 +166,9 @@ class JSONDumpTests(TestCase):
 
 
 class JSONParsingTests(TestCase):
+    """
+    Sanity checks for deserialization options
+    """
 
     def test_loader_uses_decimal_to_parse_numbers(self):
         text = """
@@ -199,6 +212,9 @@ class FakeDocument(object):
 
 
 class DocumentFragmentDefaultValueTests(TestCase):
+    """
+    Tests related to defaults system
+    """
 
     def test_is_default_with_value_equal_to_default_from_schema(self):
         fragment = DocumentFragment(
@@ -232,6 +248,9 @@ class DocumentFragmentDefaultValueTests(TestCase):
 
 
 class DocumentFragmentMiscPropertiesTests(TestCase):
+    """
+    Miscellaneous tests
+    """
 
     def test_document_works(self):
         document = object()
@@ -247,6 +266,9 @@ class DocumentFragmentMiscPropertiesTests(TestCase):
 
 
 class DocumentFragmnetOrhpanTests(TestCase):
+    """
+    Tests related to orphaned fragments
+    """
 
     def test_is_orphaned_for_typical_fragments(self):
         document = object()
@@ -274,6 +296,9 @@ class DocumentFragmnetOrhpanTests(TestCase):
 
 
 class DocumentFragmentValueReadTests(TestCase):
+    """
+    Tests related to reading values
+    """
 
     def test_value_uses_schema_to_find_default_value(self):
         fragment = DocumentFragment(
@@ -300,6 +325,9 @@ class DocumentFragmentValueReadTests(TestCase):
 
 
 class DocumentFragmentSetTests(TestCase):
+    """
+    Tests related to writing values
+    """
 
     def setUp(self):
         super(DocumentFragmentSetTests, self).setUp()
@@ -351,6 +379,9 @@ class DocumentFragmentSetTests(TestCase):
 
 
 class DocumentFragmentGetTests(TestCase):
+    """
+    Tests related to referencing fragments
+    """
 
     def test_getitem_raises_item_error_for_missing_sub_values(self):
         fragment = DocumentFragment(
@@ -451,6 +482,9 @@ class DocumentFragmentGetTests(TestCase):
 
 
 class DocumentFragmentLengthTests(TestCase):
+    """
+    Tests related to collection size methods
+    """
 
     def test_length_works_on_lists(self):
         fragment = DocumentFragment(
@@ -496,6 +530,9 @@ class DocumentFragmentLengthTests(TestCase):
 
 
 class DocumentFragmentContainsTests(TestCase):
+    """
+    Tests related to collection membership methods
+    """
 
     def test_contains_works_on_lists(self):
         fragment = DocumentFragment(
@@ -541,6 +578,9 @@ class DocumentFragmentContainsTests(TestCase):
 
 
 class DocumentFragmentIterTests(TestCase):
+    """
+    Tests related to collection iteration
+    """
 
     def test_iter_works_on_lists(self):
         fragment = DocumentFragment(
@@ -586,6 +626,9 @@ class DocumentFragmentIterTests(TestCase):
 
 
 class DocumentTests(TestCase):
+    """
+    Tests related to the Document class
+    """
 
     def test_document_has_initial_revision(self):
         doc = Document()
@@ -616,6 +659,9 @@ class DocumentTests(TestCase):
 
 
 class DocumentUsageTests(TestCase):
+    """
+    Tests related to using document features
+    """
 
     def test_deeply_nested_defaults_unwind(self):
         doc = Document(
@@ -651,6 +697,9 @@ class DocumentUsageTests(TestCase):
 
 
 class DecoratorTests(TestCase):
+    """
+    Tests related to document fragment decorators
+    """
 
     class TestDocument(Document):
 

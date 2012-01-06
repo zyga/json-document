@@ -23,6 +23,7 @@ Table Of Contents
    basics.rst
    core.rst
    advanced.rst
+   reference.rst
 
 
 Indices and tables

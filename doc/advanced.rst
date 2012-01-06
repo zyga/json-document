@@ -23,7 +23,7 @@ For the sake of documentation we'll be writing a word counter program that will
 store the count of each encountered word. We'll need to subclass
 DocumentFragment so let's pull that in to our namespace::
 
-    >>> from json_document.document import DocumentFragment
+    >>> from json_document.document import Document, DocumentFragment
 
 The Word class is what will represent each word we've encountered. We'll start
 by keeping it simple, just a inc() method::

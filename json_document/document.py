@@ -16,6 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+json_document.document
+----------------------
+
+Document and fragment classes
+"""
+
 import copy
 from json_schema_validator.errors import SchemaError
 from json_schema_validator.schema  import Schema
@@ -39,11 +46,32 @@ DefaultValue = DefaultValue()
 
 class DocumentFragment(object):
     """
-    Class representing a fragment of a document.
+    Wrapper around a fragment of a document.
 
-    Fragment may point to a single item (such as None, bool, int, float,
-    string) or to a container (such as list or dict). You can access the value
-    pointed to with the 'value' property.
+    Fragment may wrap a single item (such as None, bool, int, float, string) or
+    to a container (such as list or dict). You can access the value pointed to
+    with the :attr:`value` property.
+
+    Each fragment is linked to a :attr:`parent` fragment and the
+    :attr:'`document` itself. When the parent fragment wraps a list or a
+    dictionary then the index (or key) that this fragment was references as is
+    stored in :attr:`item`. Sometimes this linkage becomes broken and a
+    fragment is considered orphaned. Orphaned fragments still allow you to read
+    the value they wrap but since they are no longer associated with any
+    document you cannot set the value anymore.
+
+    Fragment is also optionally associated with a schema (typically the
+    relevant part of the document schema). When schema is available you can
+    :meth:`validate()` a fragment for correctness. If the schema designates a
+    :attr:`default_value` you can :meth:`revert_to_default()` to discard the
+    current value in favour of the one from the schema.
+
+    .. note: 
+
+        Fragments cache their children. If you access a fragment item (through the
+        __getitem__ operator) a new fragment instance wrapping that value is
+        created and retained. Fragment cache is only purged if you overwrite the
+        value directly. This also orphans the fragments that were created so far.
     """
 
     __slots__ = ('_document', '_parent', '_value', '_item', '_schema',
@@ -59,6 +87,19 @@ class DocumentFragment(object):
 
     @property
     def schema(self):
+        """
+        Schema associated with this fragment
+        
+        Schema may be None
+
+        This is a read-only property. Schema is automatically provided when a
+        sub-fragment is accessed on a parent fragment (all the way up to the
+        document). To provide schema for your fragments make sure to include
+        them in the ``properties`` or ``items``. Alternatively you can provide
+        ``additionalProperties`` that will act as a catch-all clause allowing
+        you to define a schema for anything that was not explicitly matched by
+        ``properties``.
+        """
         if self._schema is not None:
             return Schema(self._schema)
 
@@ -67,14 +108,19 @@ class DocumentFragment(object):
         """
         Check if this fragment points to a default value.
 
-        Note: A fragment that points to a value equal to the value of the
-        default is NOT considered default. Only fragments that were not
-        assigned a value previously are considered default.
+        .. note::
+
+            A fragment that points to a value equal to the value of the default
+            is **not** considered default. Only fragments that were not
+            assigned a value previously are considered default.
         """
         return self._value is DefaultValue
 
     def revert_to_default(self):
         """
+        Discard current value and use defaults from the schema.
+
+        @raises TypeError: when default value does not exist 
         Revert the value that this fragment points to to the default value.
         """
         self._ensure_not_orphaned()
@@ -103,6 +149,16 @@ class DocumentFragment(object):
 
     @property
     def default_value_exists(self):
+        """
+        Returns True if a default value exists for this fragment.
+
+        The default value can be accessed with :attr:`default_value`. You can
+        also revert the current value to default by calling
+        :meth:`revert_to_default()`.
+
+        When there is no default value any attempt to use or access it will
+        raise a SchemaError.
+        """
         try:
             self.default_value
             return True
@@ -209,8 +265,11 @@ class DocumentFragment(object):
         the document and copying the value so that it is fully independent from
         the parent.
 
-        Note: This does method _not_ remove the fragment from the parent's
-        fragment cache.
+        .. note::
+
+            This does method _not_ remove the fragment from the parent's
+            fragment cache. This is handled by _set_value() which calls
+            _orhpan() on sub fragments it knows about.
         """
         self._parent = None
         self._document = None
@@ -221,14 +280,14 @@ class DocumentFragment(object):
         """
         Check if a fragment is orphaned.
 
-        Orphaned fragments can occur in this scenario:
+        Orphaned fragments can occur in this scenario::
 
-        x    >>> doc = Document()
-        x    >>> doc["foo"] = "value"
-        x    >>> foo = doc["foo"]
-        x    >>> doc.value = {}
-        x    >>> foo.is_orphaned
-        x    True
+            >>> doc = Document()
+            >>> doc["foo"] = "value"
+            >>> foo = doc["foo"]
+            >>> doc.value = {}
+            >>> foo.is_orphaned
+            True
 
         That is, when the parent fragment value is overwritten.
         """
@@ -239,27 +298,30 @@ class DocumentFragment(object):
     @property
     def document(self):
         """
-        Return the document object (the topmost parent document fragment)
+        The document object (the topmost parent document fragment)
         """
         return self._document
 
     @property
     def parent(self):
         """
-        Return the parent fragment.
+        The parent fragment (if any)
 
-        The document root (typically Document instance) has no parent. If the
-        parent exist then 'fragment.parent[fragment.item]' points back to the
-        same value as 'fragment' but wrapped in a different instance of
-        DocumentFragment.
+        The document root (typically a :class:`Document` instance) has no
+        parent. If the parent exist then ``fragment.parent[fragment.item]``
+        points back to the same value as ``fragment`` but wrapped in a
+        different instance of DocumentFragment.
         """
         return self._parent
 
     @property
     def item(self):
         """
-        Get the key that was used to access this fragment from the parent
-        fragment. Typically this is the dictionary key name or list index.
+        The index of this fragment in the parent collection.
+
+        Item is named somewhat misleadingly. It is the name of the index that
+        was used to access this fragment from the parent fragment. Typically
+        this is the dictionary key name or list index.
         """
         return self._item
 
@@ -292,7 +354,7 @@ class DocumentFragment(object):
                     if self.schema.additionalItems is not False:
                         item_schema = self.schema.additionalItems
             elif isinstance(self.schema.items, dict):
-                # For arrays with single scheme for each array item just use
+                # For arrays with single schema for each array item just use
                 # the schema directly.
                 item_schema = self.schema.items
         return item_schema
@@ -354,11 +416,13 @@ class DocumentFragment(object):
         """
         Set the value of a sub-fragment.
 
-        Note: unlike __getitem__ this method operates directly on the value.
-        It is equivalent to fragment[item].value = new_value but it works
-        correctly for missing items.
+        .. note::
+        
+            unlike :meth:`__getitem__()` this method operates directly on the
+            value. It is equivalent to ``fragment[item].value = new_value``
+            but it works correctly for missing items.
 
-        See value= for details on how assignment works.
+            See :attr:`value` for details on how assignment works.
         """
         fragment = self._get_sub_fragment(item, allow_create=True,
                                           create_value=new_value)
@@ -411,8 +475,8 @@ class Document(DocumentFragment):
     """
     Class representing a smart JSON document
 
-    A document is also a document fragment, thus is inherits all of its
-    properties.  There are two key differences: a document has no parent
+    A document is also a fragment that wraps the entire value. Is inherits all
+    of its properties. There are two key differences: a document has no parent
     fragment and it holds the revision counter that is incremented on each
     modification of the document.
     """
@@ -446,7 +510,10 @@ class Document(DocumentFragment):
         """
         Return the revision number of this document.
 
-        Each change increments this value by one.
+        Each change increments this value by one. You should not really care
+        about the count as sometimes the increments may be not what you
+        expected. It is best to use this to spot difference (if your count is
+        different than mine we're different).
         """
         return self._revision
 
@@ -461,7 +528,7 @@ class Document(DocumentFragment):
 
 class DocumentPersistence(object):
     """
-    Simple glue layer between document and storage
+    Simple glue layer between document and storage::
 
         document <-> serializer <-> storage
 

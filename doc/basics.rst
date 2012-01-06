@@ -15,8 +15,10 @@ you'll find that a lot of things are the same::
     >>> doc['hello'] = 'world'
 
 The first major difference is evident when you want to refer to data. Instead
-of returning the value directly you get an instance of DocumentFragment. To
-access the value just use the value property:: 
+of returning the value directly you get an instance of
+:class:`~json_document.document.DocumentFragment`. To access the value you'll
+have to use the :attr:`~json_document.document.DocumentFragment.value`
+property:: 
 
     >>> doc['hello'].value
     'world'
@@ -54,11 +56,11 @@ describe one person and will remember their name and age::
     ...     }
     ... }
 
-This schema can be read as follows::
+This schema can be read as follows:
 
-    The root element is an object titled "Person record".
-    It has a property "name" that is a string titled "Full name".
-    It also has a property "age" that is a number titled "Age in years"
+* The root element is an object titled "Person record".
+* It has a property "name" that is a string titled "Full name".
+* It also has a property "age" that is a number titled "Age in years"
 
 This schema is very simple but it already defines the correct shape of a
 document. It defines the type of the root object (a json "object", for python
@@ -66,14 +68,15 @@ that translates to a dictionary instance). It also describes the attributes of
 that object (name and age) and their type. The schema also mixes documentation
 elements via the "title" and "description" properties.
 
-Using a schema you can ``validate`` documents for correctness. Let's see how that
+Using a schema you can `validate` documents for correctness. Let's see how that
 works::
 
     >>> joe = Document({"name": "joe", "age": 32}, person_schema)
     >>> joe.validate()
 
-Calling validate() would have raised an exception if joe was not a valid
-"Person record". Let's set the age to an invalid type to see how that works::
+Calling :meth:`~json_document.document.DocumentFragment.validate()` would have
+raised an exception if joe was not a valid "Person record". Let's set the age
+to an invalid type to see how that works::
 
     >>> joe["age"] = "thirty two"
     >>> joe.validate()
@@ -83,15 +86,16 @@ Calling validate() would have raised an exception if joe was not a valid
 
 Boom! Not only did the validation fail. We've got a detailed error message that
 outlines the problem. It also gives us the JavaScript expression that describes
-the part that did not match the schema (object.age) and the part of the schema
-that was violated (schema.properties.age.type).
+the part that did not match the schema (``object.age``) and the part of the schema
+that was violated (``schema.properties.age.type``).
 
 Because the actual value is hidden behind the .value property we can stash a
-set of useful properties and methods in each DocumentFragment. One of them is
-.schema which unsurprisingly returns the associated schema element (if we have
-one). Unlike returning the raw JSON schema it returns a smart wrapper around it
-that has properties corresponding to each legal schema part (such as .type and
-.properties). You can use it to access meta-data such as title and description::
+set of useful properties and methods in each ``DocumentFragment``. One of them
+is ``.schema`` which unsurprisingly returns the associated schema element (if
+we have one). Instead of returning the raw JSON schema it returns a smart wrapper
+around it that has properties corresponding to each legal schema part (such as
+``.type`` and ``.properties``). You can use it to access meta-data such as
+title and description::
 
     >>> joe["age"].schema.title
     'Age in years'
@@ -110,4 +114,3 @@ required or not. By default everything is required, unless marked optional::
 
     >>> joe["name"].schema.optional
     False
-

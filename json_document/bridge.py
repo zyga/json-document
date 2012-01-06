@@ -17,11 +17,14 @@
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+json_document.bridge
+--------------------
+
 Collection of decorator methods for accessing document fragments
 
-You want to use this class if you are not interested in raw JSON or
-high-level DocumentFragments (which would require you to access each value
-via the .value property).
+You want to use those decorators if you are not interested in raw JSON or
+high-level DocumentFragments (which would require you to access each value via
+the .value property) but want to offer a pythonic API instead.
 """
 
 
@@ -33,7 +36,7 @@ def fragment(func):
     function. The function is never called, it is only used to obtain the
     docstring.
 
-    This is equivalent to:
+    This is equivalent to::
 
         @property
         def foo(self):
@@ -52,7 +55,7 @@ def readonly(func):
     function.  The function is never called, it is only used to obtain the
     docstring.
 
-    This is equivalent to:
+    This is equivalent to::
 
         @property
         def foo(self):
@@ -71,11 +74,13 @@ def readwrite(func):
     function.  The function is never called, it is only used to obtain the
     docstring.
 
-    This is equivalent to:
+    This is equivalent to::
 
         @property
         def foo(self):
             return self['foo'].value
+
+    Followed by::
 
         @foo.setter
         def foo(self, new_value):
