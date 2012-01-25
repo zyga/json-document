@@ -478,7 +478,7 @@ class Document(DocumentFragment):
     fragment and it holds the revision counter that is incremented on each
     modification of the document.
     """
-    document_schema = {"type": "object"}
+    document_schema = {"type": "any"}
 
     __slots__ = DocumentFragment.__slots__ + ('_revision',)
 
