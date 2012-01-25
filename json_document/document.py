@@ -543,8 +543,8 @@ class DocumentPersistence(object):
         """
         text = self.storage.read()
         obj = self.serializer.loads(text)
-        self.doc.value = obj
-        self.last_revision = self.doc.revision
+        self.document.value = obj
+        self.last_revision = self.document.revision
 
     def save(self):
         """
