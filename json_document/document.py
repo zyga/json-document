@@ -482,17 +482,14 @@ class Document(DocumentFragment):
 
     __slots__ = DocumentFragment.__slots__ + ('_revision',)
 
-    def __init__(self, value=None, schema=None):
+    def __init__(self, value, schema=None):
         """
         Construct a document with the specified value and schema.
 
-        The value defaults to an empty object. The schema defaults to
-        document_schema attribute on the class object (which by default
-        is a very simple schema for any objects).
+        Value is required. The schema defaults to document_schema attribute
+        on the class object (which by default it a very simple schema for any objects).
         """
         # Start with an empty object by default
-        if value is None:
-            value = {}
         # Initialize DocumentFragment
         super(Document, self).__init__(
             document=self,

@@ -45,22 +45,20 @@ You can use any of those items as the root object::
     >>> long_example.value
     True
 
-Well, all except for the None which transparently translates to an empty object
-for convenience::
-
     >>> surprise = Document(None)
     >>> surprise.value
-    {}
+    None
+    
 
 Default schema
 --------------
 
 All documents have a schema, even if you don't specify one. By default the schema
-describes an arbitrary object (one with any properties)::
+describes an arbitrary JSON value (one of any type)::
 
-    >>> doc = Document()
+    >>> doc = Document({})
     >>> doc.schema
-    Schema({'type': 'object'})
+    Schema({'type': 'any'})
 
 This does not apply to fragments you create yourself. Those always inherit the schema from their
 parent document (depending on the item used to create or access that fragment). Since the default
@@ -223,7 +221,7 @@ those items transparently creates
 pointing to a sub-tree of the document object. It is possible to save those
 references and use them freely for convenience. Let's see how this works::
 
-    >>> doc = Document()
+    >>> doc = Document({})
     >>> doc["list"] = [1, 2, 3]
     >>> doc["dict"] = {"hello": "world"}
     >>> doc["value"] = "I'm a plain string"
@@ -296,7 +294,7 @@ problematic way though. A fragment can become orphaned (and useless) when its
 parent (or its parent, all the way up to the root document object) are
 overwritten. Let's see how this works::
 
-    >>> doc = Document()
+    >>> doc = Document({})
     >>> doc['foo'] = 'bar'
     >>> foo = doc['foo']
     >>> doc.value = {}

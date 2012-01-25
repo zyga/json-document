@@ -631,30 +631,30 @@ class DocumentTests(TestCase):
     """
 
     def test_document_has_initial_revision(self):
-        doc = Document()
+        doc = Document({})
         self.assertEqual(doc.revision, 0)
 
     def test_document_is_empty_initially(self):
-        doc = Document()
+        doc = Document({})
         self.assertEqual(doc._value, {})
 
     def test_document_is_valid_initially(self):
-        doc = Document()
+        doc = Document({})
         try:
             doc.validate()
         except ValidationError:
             self.fail("Document was not valid")
 
     def test_document_initial_schema(self):
-        doc = Document()
-        self.assertEqual(doc.document_schema, {"type": "object"})
+        doc = Document({})
+        self.assertEqual(doc.document_schema, {"type": "any"})
 
     def test_document_is_its_own_document(self):
-        doc = Document()
+        doc = Document({})
         self.assertIs(doc._document, doc)
 
     def test_document_has_no_item(self):
-        doc = Document()
+        doc = Document({})
         self.assertIs(doc._item, None)
 
 
@@ -665,6 +665,7 @@ class DocumentUsageTests(TestCase):
 
     def test_deeply_nested_defaults_unwind(self):
         doc = Document(
+            value={},
             schema={
                 "type": "object",
                 "default": {},
@@ -689,7 +690,7 @@ class DocumentUsageTests(TestCase):
         self.assertEqual(doc._value, {'a': {'b': {'c': 0}}})
 
     def test_is_orphaned(self):
-        doc = Document()
+        doc = Document({})
         doc["foo"] = "value"
         foo = doc["foo"]
         doc.value = {}
@@ -720,7 +721,7 @@ class DecoratorTests(TestCase):
 
     def setUp(self):
         super(DecoratorTests, self).setUp()
-        self.doc = self.TestDocument()
+        self.doc = self.TestDocument({})
 
     def test_fragment(self):
         obj = object()
