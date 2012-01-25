@@ -557,7 +557,10 @@ class DocumentPersistence(object):
         saving easily.
         """
         if self.last_revision != self.document.revision:
-            obj = self.document.value
+            if serializer.needs_real_object:
+                obj = self.document
+            else:
+                obj = self.document.value
             text = self.serializer.dumps(obj)
             self.storage.write(text)
             self.last_revision = self.document.revision

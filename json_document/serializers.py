@@ -37,6 +37,10 @@ class JSON(object):
     :class:`~json_document.document.Document` class.
     """
 
+    # Other classes can set this to True to serialize the real object-oriented
+    # version of the object.
+    needs_real_object = False
+
     @classmethod
     def _get_dict_impl(cls, retain_order):
         if retain_order:
