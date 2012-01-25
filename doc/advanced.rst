@@ -17,7 +17,7 @@ hierarchy.
 I thought it was useful so here it is. You need to have a schema for your
 document the reason for that is we'll be embedding special schema elements that
 will override the instantiated fragment class. Usually this is simple but it is
-boiler-plate-ish at times::
+boiler-plate-ish at times:
 
 For the sake of documentation we'll be writing a word counter program that will
 store the count of each encountered word. We'll need to subclass
@@ -58,7 +58,7 @@ DocumentFragment sub-class to instantiate::
 
 Having done that we can now start using this::
 
-    >>> doc = WordCounter()
+    >>> doc = WordCounter({})
 
 Default values work::
 
@@ -197,7 +197,7 @@ Let's say you have a person record with first and last name strings::
 Uh, that was verbose, the good part is that ``after`` the bulky class is
 written we can write lean code using that class. Let's see how this works::
 
-    >>> john = Person()
+    >>> john = Person({})
     >>> john.name.first = "John"
     >>> john.name.last = "Doe"
     >>> john.name.full
