@@ -564,3 +564,7 @@ class DocumentPersistence(object):
             text = self.serializer.dumps(obj)
             self.storage.write(text)
             self.last_revision = self.document.revision
+
+    @property
+    def is_dirty(self):
+        return self.last_revision != self.document.revision
