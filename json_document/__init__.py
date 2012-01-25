@@ -16,4 +16,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (0, 1, 0, "dev", 0)
+__version__ = (0, 7, 0, "dev", 0)
