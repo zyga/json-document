@@ -126,7 +126,7 @@ We can now improve our Config class with one of them the 'readwrite' bridge::
  
 The intent and code is very clear, it simply allows you to read and write the
 .value directly, without having the extra lookup on your side. It also gives
-your JSON document pythonic look and documentation.
+your JSON document pythonic look and documentation::
 
     >>> conf = BetterConfig()
     >>> conf.save_on_exit
