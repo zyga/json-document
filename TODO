@@ -1,5 +1,4 @@
-Wanted featues:
- * Add support patternProperties  
-
-Needed tests:
- * io tests
+ * Fix the error classes, currently there are too many and they are unused
+ * Add support patternProperties, explicit schema version 
+ * Do IO tests
+ * Fix missing spots in test coverage
