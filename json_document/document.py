@@ -66,12 +66,13 @@ class DocumentFragment(object):
     :attr:`default_value` you can :meth:`revert_to_default()` to discard the
     current value in favour of the one from the schema.
 
-    .. note: 
+    .. note:
 
-        Fragments cache their children. If you access a fragment item (through the
-        __getitem__ operator) a new fragment instance wrapping that value is
-        created and retained. Fragment cache is only purged if you overwrite the
-        value directly. This also orphans the fragments that were created so far.
+        Fragments cache their children. If you access a fragment item (through
+        the __getitem__ operator) a new fragment instance wrapping that value
+        is created and retained. Fragment cache is only purged if you overwrite
+        the value directly. This also orphans the fragments that were created
+        so far.
     """
 
     __slots__ = ('_document', '_parent', '_value', '_item', '_schema',
@@ -85,11 +86,15 @@ class DocumentFragment(object):
         self._schema = schema
         self._fragment_cache = {}
 
+    @classmethod
+    def _make_fragment(cls, document, parent, value, item=None, schema=None):
+        return cls(document, parent, value, item, schema)
+
     @property
     def schema(self):
         """
         Schema associated with this fragment
-        
+
         Schema may be None
 
         This is a read-only property. Schema is automatically provided when a
@@ -120,7 +125,7 @@ class DocumentFragment(object):
         """
         Discard current value and use defaults from the schema.
 
-        @raises TypeError: when default value does not exist 
+        @raises TypeError: when default value does not exist
         Revert the value that this fragment points to to the default value.
         """
         self._ensure_not_orphaned()
@@ -325,7 +330,7 @@ class DocumentFragment(object):
 
     def _get_schema_for_item(self, item):
         if self.schema is None:
-            return
+            return DocumentFragment, None
         item_schema = None
         value = self.value
         if isinstance(value, dict):
@@ -355,7 +360,14 @@ class DocumentFragment(object):
                 # For arrays with single schema for each array item just use
                 # the schema directly.
                 item_schema = self.schema.items
-        return item_schema
+        if isinstance(item_schema, type) and issubclass(item_schema, Document):
+            # If the schema value we have got is a Document class then extract
+            # the schema from the document and use the class as fragment class
+            doc_cls = item_schema
+            return doc_cls, doc_cls.document_schema
+        else:
+            doc_cls = item_schema.get('__fragment_cls', DocumentFragment)
+            return doc_cls, item_schema
 
     def _add_sub_fragment_to_cache(self, item, allow_create, create_value):
         """
@@ -365,7 +377,7 @@ class DocumentFragment(object):
         if not isinstance(self.value, (dict, list)):
             raise TypeError(
                 "DocumentFragment must point to a dictionary or list")
-        item_schema = self._get_schema_for_item(item)
+        fragment_cls, item_schema = self._get_schema_for_item(item)
         try:
             # Since we are using self.value instead of self._value we are
             # using defaults transparently.
@@ -381,11 +393,7 @@ class DocumentFragment(object):
                 item_value = create_value
             else:
                 raise ex
-        if item_schema is not None and "__fragment_cls" in item_schema:
-            fragment_cls = item_schema["__fragment_cls"]
-        else:
-            fragment_cls = DocumentFragment
-        self._fragment_cache[item] = fragment_cls(
+        self._fragment_cache[item] = fragment_cls._make_fragment(
             self._document, self, item_value, item, item_schema)
 
     def _get_sub_fragment(self, item, allow_create=False, create_value=None):
@@ -415,7 +423,7 @@ class DocumentFragment(object):
         Set the value of a sub-fragment.
 
         .. note::
-        
+
             unlike :meth:`__getitem__()` this method operates directly on the
             value. It is equivalent to ``fragment[item].value = new_value``
             but it works correctly for missing items.
@@ -486,8 +494,9 @@ class Document(DocumentFragment):
         """
         Construct a document with the specified value and schema.
 
-        Value is required. The schema defaults to document_schema attribute
-        on the class object (which by default it a very simple schema for any objects).
+        Value is required. The schema defaults to document_schema attribute on
+        the class object (which by default it a very simple schema for any
+        objects).
         """
         # Start with an empty object by default
         # Initialize DocumentFragment
@@ -499,6 +508,14 @@ class Document(DocumentFragment):
             schema=schema or self.__class__.document_schema)
         # Initially set the revision to 0
         self._revision = 0
+
+    @classmethod
+    def _make_fragment(cls, document, parent, value, item=None, schema=None):
+        self = cls(value, schema)
+        self._document = document
+        self._parent = parent
+        self._item = item
+        return self
 
     @property
     def revision(self):
