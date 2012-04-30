@@ -44,6 +44,19 @@ class DefaultValue(object):
 DefaultValue = DefaultValue()
 
 
+def _unwrap(obj):
+    if isinstance(obj, type) and issubclass(obj, Document):
+        tmp = _unwrap(obj.document_schema)
+        tmp['__fragment_cls'] = obj 
+        return tmp
+    elif isinstance(obj, list):
+        return [_unwrap(item) for item in obj]
+    elif isinstance(obj, dict):
+        return dict([(key, _unwrap(value)) for key, value in obj.iteritems()])
+    else:
+        return obj
+
+
 class DocumentFragment(object):
     """
     Wrapper around a fragment of a document.
@@ -329,7 +342,7 @@ class DocumentFragment(object):
         return self._item
 
     def _get_schema_for_item(self, item):
-        if self.schema is None:
+        if self._schema is None:
             return DocumentFragment, None
         item_schema = None
         value = self.value
@@ -360,14 +373,8 @@ class DocumentFragment(object):
                 # For arrays with single schema for each array item just use
                 # the schema directly.
                 item_schema = self.schema.items
-        if isinstance(item_schema, type) and issubclass(item_schema, Document):
-            # If the schema value we have got is a Document class then extract
-            # the schema from the document and use the class as fragment class
-            doc_cls = item_schema
-            return doc_cls, doc_cls.document_schema
-        else:
-            doc_cls = item_schema.get('__fragment_cls', DocumentFragment)
-            return doc_cls, item_schema
+        doc_cls = item_schema.get('__fragment_cls', DocumentFragment)
+        return doc_cls, item_schema
 
     def _add_sub_fragment_to_cache(self, item, allow_create, create_value):
         """
@@ -505,7 +512,7 @@ class Document(DocumentFragment):
             parent=None,
             value=value,
             item=None,
-            schema=schema or self.__class__.document_schema)
+            schema=_unwrap(schema or self.__class__.document_schema))
         # Initially set the revision to 0
         self._revision = 0
 
