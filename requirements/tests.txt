@@ -1,5 +1,2 @@
 mockfs
-nose
-nose-cov
-testscenarios
-testtools
+unittest2

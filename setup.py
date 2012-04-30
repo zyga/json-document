@@ -38,7 +38,7 @@ setup(
     url="http://github.com/zyga/json-document/",
     packages=find_packages(),
     description="Powerful and intuitive document bridge for JSON",
-    test_suite='nose.collector',
+    test_suite='unittest2.collector',
     license="LGPLv3",
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -56,7 +56,6 @@ setup(
     setup_requires=[
         'versiontools >= 1.8.2'],
     tests_require=[
-        'nose',
-        'testtools >= 0.9.11',
+        'unittest2',
         'mockfs >= 0.2'],
     zip_safe=True)

@@ -28,7 +28,7 @@ from decimal import Decimal
 
 from json_schema_validator.errors import ValidationError
 from simplejson import OrderedDict
-from testtools import TestCase, ExpectedException
+from unittest2 import TestCase
 
 from json_document.document import (
     DefaultValue,
@@ -733,8 +733,9 @@ class DecoratorTests(TestCase):
         obj = object()
         self.doc["bridge_to_readonly"] = obj
         self.assertIs(self.doc.bridge_to_readonly, obj)
-        with ExpectedException(AttributeError, "can't set attribute"):
+        with self.assertRaises(AttributeError) as exc:
             self.doc.bridge_to_readonly = object()
+        self.assertEqual(str(exc.exception), "can't set attribute")
 
     def test_readwrite(self):
         obj1 = object()
