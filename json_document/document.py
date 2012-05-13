@@ -441,6 +441,26 @@ class DocumentFragment(object):
                                           create_value=new_value)
         fragment.value = new_value
 
+    def __delitem__(self, item):
+        """
+        Delete the value of a sub-fragment.
+
+        .. note::
+
+            this operation shares the same limitation as `del self[fragment].value`
+        """
+        self._ensure_not_orphaned()
+        # Ensure there are no defaults around
+        self._ensure_not_default()
+        # Kill the value of this item
+        del self._value[item]
+        # Kill the fragment cache for this item
+        if item in self._fragment_cache:
+            fragment = self._fragment_cache[item]
+            fragment._orphan()
+        # Ensure the document has noticed the change
+        self._document._bump_revision()
+
     def __contains__(self, item):
         """
         Return True if the specified item is in this fragment.

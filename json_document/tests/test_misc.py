@@ -33,9 +33,9 @@ from unittest2 import TestCase
 from json_document.document import (
     DefaultValue,
     Document,
-    DocumentFragment,
-    DocumentPersistence)
+    DocumentFragment)
 from json_document.serializers import JSON
+from json_document.errors import OrphanedFragmentError
 from json_document import bridge
 
 
@@ -481,6 +481,55 @@ class DocumentFragmentGetTests(TestCase):
         self.assertIsInstance(fragment["item"], DocumentFragment)
 
 
+class DocumentFragmentDelTests(TestCase):
+    """
+    Tests related to deleting fragments
+    """
+
+    def test_delitem_raises_item_error_for_missing_sub_values(self):
+        fragment = DocumentFragment(
+            document=None,
+            parent=None,
+            value={})
+        self.assertRaises(KeyError, fragment.__delitem__, "item")
+
+    def test_delitem_removes_data(self):
+        # NOTE: I use Document, insted of DocumentFragment, as here the
+        # document revision gets bumped and I did not want to mock that
+        doc = Document({"item": "value"})
+        del doc['item']
+        self.assertTrue("item" not in doc._value)
+        self.assertTrue("item" not in doc._fragment_cache)
+
+    def test_delitem_orphans_fragments(self):
+        doc = Document({"item": "value"})
+        fragment = doc['item']
+        del doc['item']
+        self.assertTrue(fragment.is_orphaned)
+
+    def test_delitem_does_not_work_on_orphans(self):
+        doc = Document({"item": {"nested": "value"}})
+        fragment = doc['item']
+        doc.value = {}
+        self.assertTrue(fragment.is_orphaned)
+        self.assertRaises(OrphanedFragmentError, fragment.__delitem__, "nested")
+
+    def test_delitem_undefaults(self):
+        doc = Document(DefaultValue, {'default': {"foo": "bar"} })
+        self.assertEqual(doc['foo'].value, "bar")
+        self.assertTrue(doc.is_default)
+        del doc["foo"]
+        self.assertEqual(doc['foo'].value, "bar")
+        self.assertFalse(doc.is_default)
+
+    def test_delitem_bumps_document_revision(self):
+        doc = Document({"item": "value"})
+        before = doc._revision
+        del doc['item']
+        after = doc._revision
+        self.assertNotEqual(before, after)
+
+
 class DocumentFragmentLengthTests(TestCase):
     """
     Tests related to collection size methods
@@ -736,6 +785,8 @@ class DecoratorTests(TestCase):
         with self.assertRaises(AttributeError) as exc:
             self.doc.bridge_to_readonly = object()
         self.assertEqual(str(exc.exception), "can't set attribute")
+        with self.assertRaises(AttributeError) as exc:
+            del self.doc.bridge_to_readonly
 
     def test_readwrite(self):
         obj1 = object()
@@ -744,3 +795,6 @@ class DecoratorTests(TestCase):
         self.assertIs(self.doc.bridge_to_readwrite, obj1)
         self.doc.bridge_to_readwrite = obj2
         self.assertIs(self.doc.bridge_to_readwrite, obj2)
+        self.assertEqual(self.doc.value, {'bridge_to_readwrite': obj2})
+        del self.doc.bridge_to_readwrite
+        self.assertEqual(self.doc.value, {})

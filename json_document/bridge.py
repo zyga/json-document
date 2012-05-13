@@ -93,4 +93,8 @@ def readwrite(func):
         # XXX: Dear reader, see what __setitem__ does to understand why we
         # don't assign to .value
         self[func.__name__] = new_value
-    return property(_get, _set, None, func.__doc__)
+
+    def _del(self):
+        del self[func.__name__]
+
+    return property(_get, _set, _del, func.__doc__)
