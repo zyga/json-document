@@ -34,7 +34,7 @@ setup(
     name='json-document',
     version=":versiontools:json_document:",
     author="Zygmunt Krynicki",
-    author_email="zygmunt.krynicki@linaro.org",
+    author_email="zkrynicki@gmail.com",
     url="http://github.com/zyga/json-document/",
     packages=find_packages(),
     description="Powerful and intuitive document bridge for JSON",
