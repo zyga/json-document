@@ -23,7 +23,13 @@ json_document.tests
 Unit tests for this package
 """
 
-from StringIO import StringIO
+import sys
+
+if sys.version_info[0] > 2:
+    from io import StringIO
+else:
+    from StringIO import StringIO
+
 from decimal import Decimal
 
 from json_schema_validator.errors import ValidationError
@@ -64,12 +70,12 @@ class JSONTests(TestCase):
 
     def test_loads__with_enabled_retain_order__key_order(self):
         doc = JSON.loads(self.text, retain_order=True)
-        observed_keys = doc.keys()
+        observed_keys = list(doc.keys())
         self.assertEqual(observed_keys, self.expected_keys)
 
     def test_load__with_enabled_retain_order__key_order(self):
         doc = JSON.load(self.stream, retain_order=True)
-        observed_keys = doc.keys()
+        observed_keys = list(doc.keys())
         self.assertEqual(observed_keys, self.expected_keys)
 
     def test_loads__with_enabled_retain_order__dict_class(self):
