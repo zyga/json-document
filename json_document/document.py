@@ -52,7 +52,7 @@ def _unwrap(obj):
     elif isinstance(obj, list):
         return [_unwrap(item) for item in obj]
     elif isinstance(obj, dict):
-        return dict([(key, _unwrap(value)) for key, value in obj.iteritems()])
+        return dict([(key, _unwrap(value)) for key, value in obj.items()])
     else:
         return obj
 
@@ -146,7 +146,7 @@ class DocumentFragment(object):
             raise TypeError("Default value does not exist")
         if self._value is not DefaultValue:
             # Orphan all existing fragments in our fragment cache
-            for fragment in self._fragment_cache.itervalues():
+            for fragment in self._fragment_cache.values():
                 fragment._orphan()
             # Purge the fragment cache from this fragment
             self._fragment_cache = {}
@@ -202,7 +202,7 @@ class DocumentFragment(object):
             # Ensure there are no defaults around
             self._ensure_not_default()
             # Orphan all existing fragments in our fragment cache
-            for fragment in self._fragment_cache.itervalues():
+            for fragment in self._fragment_cache.values():
                 fragment._orphan()
             # Purge the fragment cache from this fragment
             self._fragment_cache = {}
@@ -486,7 +486,7 @@ class DocumentFragment(object):
             yield self[item]
 
     def _iter_dict(self):
-        for item in self.value.iterkeys():
+        for item in self.value.keys():
             yield self[item]
 
     def __iter__(self):

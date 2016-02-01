@@ -30,6 +30,10 @@ except ImportError as exc:
     raise
 
 
+dependency_links = [
+    'git+https://github.com/jayvdb/json-schema-validator.git@py3#egg=json-schema-validator',
+]
+
 setup(
     name='json-document',
     version=":versiontools:json_document:",
@@ -48,10 +52,12 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: Testing"],
+    dependency_links=dependency_links,
     install_requires=[
-        'json-schema-validator >= 2.1',
+        'json-schema-validator',
         'simplejson'],
     setup_requires=[
         'versiontools >= 1.8.2'],
