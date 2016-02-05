@@ -468,24 +468,6 @@ class DocumentFragmentGetTests(TestCase):
         # any objects.
         self.assertEqual(fragment["item"]._schema, {})
 
-    def test_getitem_uses_sub_value_class_from_schema(self):
-
-        class SpecialDocumentFragment(DocumentFragment):
-            pass
-
-        fragment = DocumentFragment(
-            document=None,
-            parent=None,
-            value={
-                "item": "value"},
-            item=None,
-            schema={
-                "type": "object",
-                "properties": {
-                    "item": {
-                        "__fragment_cls": SpecialDocumentFragment}}})
-        self.assertIsInstance(fragment["item"], DocumentFragment)
-
 
 class DocumentFragmentDelTests(TestCase):
     """
