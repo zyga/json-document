@@ -18,8 +18,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with json-document.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from __future__ import print_function
+
+import sys
 
 try:
     from setuptools import setup, find_packages
@@ -30,9 +31,10 @@ except ImportError as exc:
     raise
 
 
-dependency_links = [
-    'git+https://github.com/jayvdb/json-schema-validator.git@py3#egg=json-schema-validator',
-]
+if sys.version_info[0] > 2:
+    jsv_min_version = '2.4'
+else:
+    jsv_min_version = '2.1'
 
 setup(
     name='json-document',
@@ -57,9 +59,8 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: Testing"],
-    dependency_links=dependency_links,
     install_requires=[
-        'json-schema-validator',
+        'json-schema-validator >= ' + jsv_min_version,
         'simplejson'],
     setup_requires=[
         'versiontools >= 1.8.2'],
